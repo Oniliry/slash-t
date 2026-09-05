@@ -51,6 +51,9 @@ async def health():
     )
 
 if __name__ == "__main__":
-    asyncio.run(drop_tables())
-    asyncio.run(create_tables())
+    try:
+        asyncio.run(drop_tables())
+        asyncio.run(create_tables())
+    except:
+        pass
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
