@@ -33,7 +33,7 @@ function HomePage() {
 
   return (
     <section>
-      <h1>Главная</h1>
+      <h1>Главная (pc1)</h1>
       {error ? <p>{error}</p> : <p>{serviceText || 'Загрузка...'}</p>}
     </section>
   )
