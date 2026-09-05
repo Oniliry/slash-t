@@ -2,8 +2,8 @@ import { NavLink } from 'react-router-dom'
 
 const navigationItems = [
   { to: '/', label: 'Главная', end: true },
-  { to: '/search', label: 'Поиск' },
-  { to: '/notifications', label: 'Уведомления' },
+  { to: '/expenses', label: 'Расходы' },
+  { to: '/family', label: 'Семья' },
   { to: '/profile', label: 'Профиль' },
 ]
 

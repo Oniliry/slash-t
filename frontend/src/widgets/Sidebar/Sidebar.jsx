@@ -1,15 +1,16 @@
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 const navigationItems = [
   { to: '/', label: 'Главная', end: true },
-  { to: '/search', label: 'Поиск' },
-  { to: '/notifications', label: 'Уведомления' },
+  { to: '/expenses', label: 'Расходы' },
+  { to: '/family', label: 'Семья' },
   { to: '/profile', label: 'Профиль' },
 ]
 
 function Sidebar() {
   return (
     <aside className="sidebar" aria-label="Основная навигация">
+      <span className="sidebar__label">Навигация</span>
       <nav>
         {navigationItems.map((item) => (
           <NavLink
@@ -22,6 +23,9 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      <Link className="sidebar__logout" to="/auth">
+        Выйти
+      </Link>
     </aside>
   )
 }

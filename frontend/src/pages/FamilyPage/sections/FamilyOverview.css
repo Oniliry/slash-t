@@ -1,0 +1,10 @@
+.overview-grid { display: grid; grid-template-columns: 1.4fr 0.6fr; gap: 16px; margin-bottom: 16px; }
+.card { padding: 24px; background: #ffffff; border: 1px solid #e2e7ec; border-radius: 10px; }
+.card h2 { margin: 0; font-size: 21px; }
+.card__eyebrow { margin: 0 0 8px; color: #d97757; font-size: 11px; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
+.card__muted { margin: 8px 0 0; color: #66727e; font-size: 13px; line-height: 1.55; }
+.split { display: flex; height: 34px; margin-top: 22px; overflow: hidden; color: #ffffff; font-size: 11px; font-weight: 700; border-radius: 6px; }
+.split span { display: flex; align-items: center; padding: 0 12px; background: #253746; }
+.split span + span { justify-content: flex-end; background: #d97757; }
+@media (max-width: 760px) { .overview-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .card { padding: 20px; } }

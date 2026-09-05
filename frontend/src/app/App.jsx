@@ -1,9 +1,13 @@
-import { RouterProvider } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 
-import { router } from './router.jsx'
+import { AppRouter } from './routers/router.jsx'
 
 function App() {
-	return <RouterProvider router={router} />
+	return (
+		<BrowserRouter>
+			<AppRouter />
+		</BrowserRouter>
+	)
 }
 
 export default App
