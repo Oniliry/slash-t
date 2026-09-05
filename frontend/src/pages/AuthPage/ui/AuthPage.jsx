@@ -1,7 +1,7 @@
-import AuthForm from '../sections/AuthForm.jsx'
+import AuthForm from "../sections/AuthForm.jsx";
 
 function AuthPage() {
-  return <AuthForm />
+  return <AuthForm />;
 }
 
-export default AuthPage
+export default AuthPage;

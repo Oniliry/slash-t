@@ -1,5 +1,6 @@
 asyncpg
 fastapi
+PyJWT
 python-dotenv
 redis
 uvicorn[standard]

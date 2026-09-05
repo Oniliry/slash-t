@@ -1,4 +1,6 @@
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+
+import { useAuth } from '../../app/providers/AuthProvider.jsx'
 
 const navigationItems = [
   { to: '/', label: 'Главная', end: true },
@@ -8,6 +10,14 @@ const navigationItems = [
 ]
 
 function Sidebar() {
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/auth', { replace: true })
+  }
+
   return (
     <aside className="sidebar" aria-label="Основная навигация">
       <span className="sidebar__label">Навигация</span>
@@ -23,9 +33,9 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <Link className="sidebar__logout" to="/auth">
+      <button className="sidebar__logout" type="button" onClick={handleLogout}>
         Выйти
-      </Link>
+      </button>
     </aside>
   )
 }

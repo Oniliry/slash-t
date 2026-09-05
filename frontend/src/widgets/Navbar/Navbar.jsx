@@ -1,6 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+import { useAuth } from '../../app/providers/AuthProvider.jsx'
 
 function Navbar() {
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/auth', { replace: true })
+  }
+
   return (
     <header className="navbar">
       <Link className="navbar__brand" to="/">
@@ -9,9 +19,9 @@ function Navbar() {
       </Link>
       <div className="navbar__actions">
         <span className="navbar__status">Online</span>
-        <Link className="navbar__logout" to="/auth">
+        <button className="navbar__logout" type="button" onClick={handleLogout}>
           Выйти
-        </Link>
+        </button>
       </div>
     </header>
   )

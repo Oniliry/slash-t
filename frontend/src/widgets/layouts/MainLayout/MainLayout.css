@@ -60,9 +60,14 @@
 
 .navbar__logout,
 .sidebar__logout {
+  padding: 0;
   color: #8a969f;
   font-size: 13px;
   font-weight: 650;
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
   text-decoration: none;
   transition: color 160ms ease;
 }
@@ -125,6 +130,7 @@
 
 .sidebar__logout {
   display: block;
+  width: calc(100% - 28px);
   margin: 36px 14px 0;
   padding-top: 20px;
   border-top: 1px solid #edf0f2;
