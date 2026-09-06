@@ -1,21 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap');
+
+/* =========================================================================
+   Slash T — design tokens
+   Направление: интерфейс Сбербанка (фирменный зелёный, крупные цифры,
+   дружелюбная геометрия) поверх материала Liquid Glass с новых iPhone —
+   полупрозрачные, размытые панели со световым бликом по верхнему краю,
+   которые «плавают» над мягким градиентным фоном.
+   ========================================================================= */
+:root {
+  /* Sber green — основной бренд-акцент, зарезервирован для действий и денег */
+  --green: #21a038;
+  --green-deep: #0b5c22;
+  --green-soft: #e3f5e6;
+
+  /* текст: тёплый тёмно-зелёный «инк», а не нейтральный чёрный */
+  --ink: #10241a;
+  --ink-soft: #5c6f64;
+  --ink-faint: #93a49b;
+
+  /* фон-«сетка» — по нему видно преломление стекла */
+  --paper: #eef3ea;
+  --paper-warm: #f8f7f1;
+
+  /* предупреждающий акцент — долги/просрочка, отдельный от зелёного */
+  --coral: #dd4f2f;
+  --coral-soft: #fbe9e2;
+
+  /* стекло */
+  --glass-fill: rgba(255, 255, 255, 0.58);
+  --glass-fill-strong: rgba(255, 255, 255, 0.74);
+  --glass-fill-soft: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-line: rgba(16, 36, 26, 0.09);
+  --glass-blur: blur(28px);
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 24px 48px -28px rgba(16, 36, 26, 0.32),
+    0 2px 10px rgba(16, 36, 26, 0.05);
+  --glass-shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 14px 28px -18px rgba(16, 36, 26, 0.28);
+
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 15px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+}
+
 * {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-	min-height: 100%;
-	margin: 0;
+  min-height: 100%;
+  margin: 0;
 }
 
 body {
-	color: #17202a;
-	font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	background: #f5f7fa;
+  color: var(--ink);
+  font-family: "Onest", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(1100px 620px at 12% -12%, #d7f0dd 0%, rgba(215, 240, 221, 0) 60%),
+    radial-gradient(900px 560px at 108% 8%, #cdeadd 0%, rgba(205, 234, 221, 0) 55%),
+    radial-gradient(1000px 700px at 50% 120%, #dceee0 0%, rgba(220, 238, 224, 0) 60%),
+    linear-gradient(180deg, var(--paper-warm) 0%, var(--paper) 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
 a {
-	font: inherit;
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* =========================================================================
+   Общие компоненты, переиспользуемые на всех страницах
+   ========================================================================= */
+
+.page {
+  max-width: 1080px;
+  color: var(--ink);
+}
+
+.page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.page__eyebrow {
+  margin: 0 0 8px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.page h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.page__lead {
+  max-width: 560px;
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .page__header {
+    display: block;
+  }
+}
+
+/* Стеклянная карточка — базовая поверхность контента на всех страницах */
+.card {
+  padding: 24px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--glass-blur) saturate(1.5);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.5);
+  box-shadow: var(--glass-shadow);
+}
+
+.card__eyebrow {
+  margin: 0 0 8px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat__value {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.stat__caption {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.section-heading__hint {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+/* Список строк внутри стеклянной карточки — сами строки остаются на
+   более плотном стекле, чтобы текст не терял контраст. */
+.list {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  background: var(--glass-line);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
+}
+
+.list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 16px;
+  background: var(--glass-fill-strong);
+}
+
+.list__row span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.list__row b {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.list__row small {
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+.list__row strong {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.list__empty {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+  }
+
+  .list__row {
+    align-items: flex-start;
+  }
 }

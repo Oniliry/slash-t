@@ -1,41 +1,59 @@
 .auth-page {
   width: min(100%, 420px);
   padding: 36px;
-  background: #ffffff;
-  border: 1px solid #e2e7ec;
-  border-radius: 10px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--glass-blur) saturate(1.5);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.5);
+  box-shadow: var(--glass-shadow);
 }
 
 .auth-page h1 {
   margin: 0 0 8px;
-  color: #17202a;
+  color: var(--ink);
   font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
+
 .auth-page p {
   margin: 0 0 24px;
-  color: #66727e;
+  color: var(--ink-soft);
 }
+
 .auth-page__fields {
   display: grid;
   gap: 14px;
 }
+
 .auth-page label {
   display: grid;
   gap: 6px;
-  color: #34414d;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 650;
 }
+
 .auth-page input {
   padding: 12px;
-  border: 1px solid #d8e0e6;
-  border-radius: 7px;
+  font: inherit;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
 }
+
+.auth-page input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: -1px;
+}
+
 .auth-page__actions {
   display: grid;
   gap: 10px;
   margin-top: 24px;
 }
+
 .auth-page__actions a,
 .auth-page__actions button {
   padding: 12px;
@@ -43,12 +61,15 @@
   font: inherit;
   font-weight: 700;
   text-decoration: none;
-  border-radius: 7px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
+
 .auth-page__login {
   color: #ffffff;
-  background: #17202a;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 0;
+  box-shadow: 0 10px 22px -10px rgba(11, 92, 34, 0.6);
 }
 
 .auth-page__login:disabled {
@@ -57,17 +78,19 @@
 }
 
 .auth-page__home {
-  color: #66727e;
-  background: #f4f6f8;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
 }
 
 .auth-page__error {
   margin: 14px 0 0 !important;
-  color: #c2413b !important;
+  color: var(--coral) !important;
   font-size: 13px;
 }
+
 .auth-page__toggle {
-  color: #34414d;
-  background: #ffffff;
-  border: 1px solid #d8e0e6;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
 }

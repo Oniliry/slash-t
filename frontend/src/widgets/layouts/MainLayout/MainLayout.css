@@ -1,46 +1,55 @@
 .main-layout {
   min-height: 100vh;
-  background: #f4f6f8;
 }
 
+/* ---- Верхний бар: плавающая стеклянная капсула ---- */
 .navbar {
+  position: sticky;
+  top: 14px;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
-  padding: 0 32px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e7ec;
+  height: 60px;
+  margin: 14px 20px 0;
+  padding: 0 10px 0 20px;
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  backdrop-filter: var(--glass-blur) saturate(1.6);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.6);
+  box-shadow: var(--glass-shadow-sm);
 }
 
 .navbar__brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #17202a;
-  font-size: 18px;
-  font-weight: 750;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   text-decoration: none;
 }
 
 .navbar__mark {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1;
-  background: #17202a;
-  border-radius: 8px;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .navbar__status {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #66727e;
+  color: var(--ink-faint);
   font-size: 12px;
 }
 
@@ -48,20 +57,21 @@
   width: 7px;
   height: 7px;
   content: '';
-  background: #38a169;
+  background: var(--green);
   border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--green-soft);
 }
 
 .navbar__actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .navbar__logout,
 .sidebar__logout {
   padding: 0;
-  color: #8a969f;
+  color: var(--ink-faint);
   font-size: 13px;
   font-weight: 650;
   font-family: inherit;
@@ -74,30 +84,38 @@
 
 .navbar__logout:hover,
 .sidebar__logout:hover {
-  color: #21a038;
+  color: var(--green-deep);
 }
 
 .main-layout__body {
   display: flex;
-  min-height: calc(100vh - 68px);
+  align-items: flex-start;
+  min-height: calc(100vh - 88px);
 }
 
+/* ---- Боковая навигация: стеклянная панель ---- */
 .sidebar {
-  width: 240px;
-  flex: 0 0 240px;
-  padding: 32px 16px;
-  background: #ffffff;
-  border-right: 1px solid #e2e7ec;
+  position: sticky;
+  top: 90px;
+  width: 232px;
+  flex: 0 0 232px;
+  margin: 16px 0 20px 20px;
+  padding: 22px 14px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--glass-blur) saturate(1.5);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.5);
+  box-shadow: var(--glass-shadow-sm);
 }
 
 .sidebar__label {
   display: block;
   padding: 0 14px 12px;
-  color: #9aa5ae;
+  color: var(--ink-faint);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .sidebar nav,
@@ -112,28 +130,33 @@
 
 .sidebar__link,
 .tab-bar__link {
-  color: #66727e;
+  color: var(--ink-soft);
   text-decoration: none;
   transition: background-color 160ms ease, color 160ms ease;
 }
 
 .sidebar__link {
   padding: 11px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
 }
 
-.sidebar__link:hover,
+.sidebar__link:hover {
+  color: var(--ink);
+  background: rgba(16, 36, 26, 0.05);
+}
+
 .sidebar__link--active {
-  color: #17202a;
-  background: #eef2f5;
+  color: #ffffff;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
 }
 
 .sidebar__logout {
   display: block;
   width: calc(100% - 28px);
-  margin: 36px 14px 0;
-  padding-top: 20px;
-  border-top: 1px solid #edf0f2;
+  margin: 32px 14px 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--glass-line);
 }
 
 .main-layout__main {
@@ -143,7 +166,7 @@
 
 .main-layout__content {
   max-width: 1200px;
-  padding: 36px 40px;
+  padding: 32px 40px 40px;
 }
 
 .tab-bar {
@@ -152,8 +175,10 @@
 
 @media (max-width: 700px) {
   .navbar {
-    height: 60px;
-    padding: 0 20px;
+    top: 10px;
+    height: 56px;
+    margin: 10px 14px 0;
+    padding: 0 8px 0 16px;
   }
 
   .navbar__status,
@@ -166,43 +191,53 @@
   }
 
   .main-layout__body {
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - 76px);
   }
 
   .main-layout__content {
-    padding: 24px 20px 92px;
+    padding: 22px 16px 118px;
   }
 
+  /* ---- Нижний бар: плавающая стеклянная капсула ---- */
   .tab-bar {
     position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 10;
+    right: 16px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    left: 16px;
+    z-index: 30;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-    background: #ffffff;
-    border-top: 1px solid #e2e7ec;
+    align-items: center;
+    padding: 8px;
+    background: var(--glass-fill-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    backdrop-filter: var(--glass-blur) saturate(1.6);
+    -webkit-backdrop-filter: var(--glass-blur) saturate(1.6);
+    box-shadow: var(--glass-shadow);
   }
 
   .tab-bar__link {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px 4px;
-    color: #b7c0c8;
+    gap: 2px;
+    padding: 9px 4px;
+    color: var(--ink-faint);
     text-align: center;
+    border-radius: var(--radius-pill);
   }
 
   .tab-bar__icon {
-    width: 22px;
-    height: 22px;
+    width: 21px;
+    height: 21px;
   }
 
   .tab-bar__link--active {
-    color: #17202a;
+    color: var(--green-deep);
     font-weight: 650;
+    background: var(--green-soft);
   }
 
   .tab-bar__visually-hidden {

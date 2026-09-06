@@ -1,39 +1,43 @@
 .onboarding-page {
   width: min(100%, 460px);
   padding: 36px;
-  background: #ffffff;
-  border: 1px solid #e2e7ec;
-  border-radius: 10px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--glass-blur) saturate(1.5);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.5);
+  box-shadow: var(--glass-shadow);
 }
 
 .onboarding-page h1 {
   margin: 0 0 8px;
-  color: #17202a;
+  color: var(--ink);
   font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .onboarding-page > p {
   margin: 0 0 28px;
-  color: #66727e;
+  color: var(--ink-soft);
 }
 
 .onboarding-page__step {
   display: inline-block;
   margin: 0 0 12px;
-  padding: 4px 10px;
-  color: #66727e;
+  padding: 4px 12px;
+  color: var(--green-deep);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  background: #f4f6f8;
-  border-radius: 999px;
+  background: var(--green-soft);
+  border-radius: var(--radius-pill);
 }
 
 .onboarding-card {
   padding: 20px;
-  border: 1px solid #e2e7ec;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
 }
 
 .onboarding-card + .onboarding-card {
@@ -42,13 +46,14 @@
 
 .onboarding-card h2 {
   margin: 0 0 4px;
-  color: #17202a;
+  color: var(--ink);
   font-size: 17px;
+  font-weight: 700;
 }
 
 .onboarding-card__hint {
   margin: 0 0 16px;
-  color: #66727e;
+  color: var(--ink-soft);
   font-size: 13px;
 }
 
@@ -60,7 +65,7 @@
 .onboarding-page label {
   display: grid;
   gap: 6px;
-  color: #34414d;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 650;
 }
@@ -69,8 +74,15 @@
 .onboarding-page select {
   padding: 12px;
   font: inherit;
-  border: 1px solid #d8e0e6;
-  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
+}
+
+.onboarding-page input:focus,
+.onboarding-page select:focus {
+  outline: 2px solid var(--green);
+  outline-offset: -1px;
 }
 
 .onboarding-page__submit {
@@ -79,10 +91,11 @@
   color: #ffffff;
   font-weight: 700;
   text-align: center;
-  background: #17202a;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: none;
-  border-radius: 7px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+  box-shadow: 0 10px 22px -10px rgba(11, 92, 34, 0.6);
 }
 
 .onboarding-page__submit:disabled {
@@ -92,7 +105,7 @@
 
 .onboarding-page__error {
   margin: 4px 0 0 !important;
-  color: #c2413b !important;
+  color: var(--coral) !important;
   font-size: 13px;
 }
 
@@ -101,10 +114,9 @@
   align-items: center;
   gap: 12px;
   margin: 22px 0;
-  color: #9aa5b1;
+  color: var(--ink-faint);
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .onboarding-divider::before,
@@ -112,7 +124,7 @@
   flex: 1;
   height: 1px;
   content: "";
-  background: #e2e7ec;
+  background: var(--glass-line);
 }
 
 .onboarding-success {
@@ -123,13 +135,13 @@
 
 .onboarding-success__code {
   padding: 18px;
-  color: #17202a;
+  color: var(--ink);
   font-size: 28px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  background: #f4f6f8;
-  border: 1px dashed #d8e0e6;
-  border-radius: 8px;
+  letter-spacing: 0.1em;
+  background: var(--green-soft);
+  border: 1px dashed rgba(11, 92, 34, 0.35);
+  border-radius: var(--radius-md);
 }
 
 .onboarding-success__actions {
@@ -140,11 +152,11 @@
 
 .onboarding-success__copy {
   padding: 12px;
-  color: #34414d;
+  color: var(--ink);
   font-weight: 700;
-  background: #ffffff;
-  border: 1px solid #d8e0e6;
-  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
@@ -152,10 +164,11 @@
   padding: 12px;
   color: #ffffff;
   font-weight: 700;
-  background: #17202a;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: none;
-  border-radius: 7px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+  box-shadow: 0 10px 22px -10px rgba(11, 92, 34, 0.6);
 }
 
 .role-options {
@@ -170,36 +183,36 @@
   gap: 4px;
   padding: 16px;
   text-align: left;
-  background: #ffffff;
-  border: 2px solid #e2e7ec;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px solid var(--glass-line);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .role-option strong {
-  color: #17202a;
+  color: var(--ink);
   font-size: 15px;
 }
 
 .role-option span {
-  color: #66727e;
+  color: var(--ink-soft);
   font-size: 12px;
 }
 
 .role-option--active {
-  border-color: #17202a;
-  background: #f4f6f8;
+  background: var(--green-soft);
+  border-color: var(--green);
 }
 
 .role-note {
   padding: 12px 14px;
   margin-top: 14px;
-  color: #34414d;
+  color: var(--ink);
   font-size: 12.5px;
   line-height: 1.5;
-  background: #f4f6f8;
-  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
 }
 
 @media (max-width: 520px) {

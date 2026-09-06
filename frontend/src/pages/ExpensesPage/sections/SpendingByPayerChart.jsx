@@ -1,6 +1,6 @@
 import "./SpendingByPayerChart.css";
 
-const COLORS = ["#21a038", "#2f6fed", "#8854d0", "#177a2b", "#5ec9c9", "#8a969f"];
+const COLORS = ["#21a038", "#0b5c22", "#dd4f2f", "#5ba98c", "#93a49b", "#10241a"];
 
 const currencyFormatter = new Intl.NumberFormat("ru-RU", {
   maximumFractionDigits: 0,

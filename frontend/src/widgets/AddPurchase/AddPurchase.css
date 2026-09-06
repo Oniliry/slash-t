@@ -1,35 +1,37 @@
-/* Кнопка "+" в верхнем баре (десктоп) */
+/* Кнопка "+" в верхнем баре (десктоп) — сплошной зелёный, самый
+   насыщенный элемент на плавающем стекле навбара. */
 .navbar__add {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 21px;
   line-height: 1;
-  background: #21a038;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: background-color 160ms ease, transform 160ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 14px -6px rgba(11, 92, 34, 0.6);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .navbar__add:hover {
-  background: #177a2b;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 18px -6px rgba(11, 92, 34, 0.7);
 }
 
 .navbar__add:active {
-  transform: scale(0.94);
+  transform: scale(0.93);
 }
 
-/* На мобильном экране кнопка "+" остаётся только в нижнем таббаре */
 @media (max-width: 700px) {
   .navbar__add {
     display: none;
   }
 }
 
-/* Кнопка "+" в нижнем таббаре (мобайл) */
+/* Кнопка "+" в нижнем таббаре (мобайл) — приподнятая "таблетка" над
+   стеклянной капсулой навигации, как основная CTA в приложении Сбера. */
 .tab-bar__add {
   display: flex;
   align-items: center;
@@ -42,17 +44,17 @@
 
 .tab-bar__add-icon {
   display: grid;
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   place-items: center;
-  margin-top: -26px;
+  margin-top: -24px;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
-  background: #21a038;
-  border: 3px solid #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(33, 160, 56, 0.4);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 3px solid var(--paper-warm);
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 22px -6px rgba(11, 92, 34, 0.55);
   transition: transform 160ms ease;
 }
 
@@ -60,7 +62,8 @@
   transform: scale(0.92);
 }
 
-/* Оверлей и модалка */
+/* Оверлей и модалка — стекло поверх стекла, поэтому фон затемняем
+   сильнее и держим бэкдроп-блюр на самой модалке. */
 .add-purchase-overlay {
   position: fixed;
   inset: 0;
@@ -69,7 +72,9 @@
   align-items: flex-end;
   justify-content: center;
   padding: 16px;
-  background: rgba(23, 32, 42, 0.45);
+  background: rgba(8, 20, 13, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 @media (min-width: 701px) {
@@ -84,8 +89,12 @@
   max-height: calc(100vh - 32px);
   padding: 24px;
   overflow-y: auto;
-  background: #ffffff;
-  border-radius: 16px;
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--glass-blur) saturate(1.6);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.6);
+  box-shadow: var(--glass-shadow);
 }
 
 .add-purchase-modal__header {
@@ -98,6 +107,7 @@
 .add-purchase-modal__header h2 {
   margin: 0;
   font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -106,17 +116,17 @@
   width: 30px;
   height: 30px;
   place-items: center;
-  color: #66727e;
+  color: var(--ink-soft);
   font-size: 20px;
-  background: #f4f6f8;
+  background: rgba(16, 36, 26, 0.06);
   border: 0;
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
 }
 
 .add-purchase-modal__field {
   margin: 0 0 8px;
-  color: #17202a;
+  color: var(--ink);
   font-size: 13px;
   font-weight: 650;
 }
@@ -128,16 +138,18 @@
 
 .add-purchase-modal__amount-row input {
   width: 100%;
-  padding: 14px 36px 14px 14px;
+  padding: 14px 40px 14px 14px;
   font-size: 22px;
   font-weight: 650;
-  background: #f4f6f8;
-  border: 1px solid #e2e7ec;
-  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
 }
 
 .add-purchase-modal__amount-row input:focus {
-  outline: 2px solid #21a038;
+  outline: 2px solid var(--green);
   outline-offset: -1px;
 }
 
@@ -145,7 +157,7 @@
   position: absolute;
   top: 50%;
   right: 14px;
-  color: #8a969f;
+  color: var(--ink-faint);
   font-size: 18px;
   transform: translateY(-50%);
 }
@@ -162,25 +174,25 @@
   gap: 3px;
   padding: 12px 14px;
   text-align: left;
-  background: #ffffff;
-  border: 1px solid #e2e7ec;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .add-purchase-modal__owner small {
-  color: #8a969f;
+  color: var(--ink-faint);
   font-size: 12px;
 }
 
 .add-purchase-modal__owner--active {
-  background: #e6f5e9;
-  border-color: #21a038;
+  background: var(--green-soft);
+  border-color: var(--green);
 }
 
 .add-purchase-modal__owner--active small {
-  color: #177a2b;
+  color: var(--green-deep);
 }
 
 .add-purchase-modal__categories {
@@ -194,31 +206,31 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 12px;
-  color: #17202a;
+  padding: 9px 13px;
+  color: var(--ink);
   font-size: 13px;
-  background: #ffffff;
-  border: 1px solid #e2e7ec;
-  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .add-purchase-modal__category--active {
-  color: #177a2b;
-  background: #e6f5e9;
-  border-color: #21a038;
+  color: var(--green-deep);
+  background: var(--green-soft);
+  border-color: var(--green);
 }
 
 .add-purchase-modal__hint {
   margin: 0 0 16px;
-  color: #66727e;
+  color: var(--ink-soft);
   font-size: 13px;
 }
 
 .add-purchase-modal__error {
   margin: 0 0 12px;
-  color: #d64545;
+  color: var(--coral);
   font-size: 13px;
 }
 
@@ -228,18 +240,20 @@
   color: #ffffff;
   font-size: 15px;
   font-weight: 650;
-  background: #17202a;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 160ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 22px -10px rgba(11, 92, 34, 0.6);
+  transition: box-shadow 160ms ease;
 }
 
 .add-purchase-modal__submit:disabled {
-  background: #c7cdd3;
+  background: var(--ink-faint);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
 .add-purchase-modal__submit:not(:disabled):hover {
-  background: #2b3846;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 12px 26px -10px rgba(11, 92, 34, 0.7);
 }
