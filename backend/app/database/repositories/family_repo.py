@@ -94,6 +94,29 @@ class FamilyRepository:
         )
         return bool(value)
 
+    async def rename_family(self, family_id: int, name: str) -> Optional[Family]:
+        """
+        Меняет название семьи.
+
+        :param family_id: Уникальный идентификатор семьи.
+        :param name: Новое название семьи.
+        :return: Обновлённая семья или None, если она не найдена.
+        """
+        family_row: Optional[Record] = await self.db.fetchrow(
+            """
+            UPDATE families
+            SET name = $2
+            WHERE id = $1
+            RETURNING id, name, invite_code, created_by, created_at
+            """,
+            (family_id, name),
+        )
+
+        if family_row is None:
+            return None
+
+        return Family.model_validate(dict(family_row))
+
 
 __all__ = [
     "FamilyRepository",

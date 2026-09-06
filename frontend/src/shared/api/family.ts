@@ -17,6 +17,7 @@ export interface FamilyMember {
   role: UserRole | null;
   monthly_income: number | null;
   income_share: number | null;
+  is_admin: boolean;
 }
 
 export interface FamilyState {
@@ -35,6 +36,21 @@ export interface JoinFamilyRequest {
 export interface SetRoleRequest {
   role: UserRole;
   monthly_income?: number;
+}
+
+export interface RenameFamilyRequest {
+  name: string;
+}
+
+export interface UpdateMemberRequest {
+  name?: string;
+  monthly_income?: number;
+}
+
+export interface BudgetSplitRequest {
+  member_a_id: number;
+  member_b_id: number;
+  member_a_ratio: number;
 }
 
 export function createFamily(
@@ -67,5 +83,41 @@ export function setFamilyRole(
 export function getMyFamily(): Promise<APIResponse<FamilyState>> {
   return request<FamilyState>('/family/me', {
     method: 'GET',
+  })
+}
+
+export function renameFamily(
+  data: RenameFamilyRequest,
+): Promise<APIResponse<Family>> {
+  return request<Family>('/family/name', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function updateFamilyMember(
+  memberId: number,
+  data: UpdateMemberRequest,
+): Promise<APIResponse<FamilyState>> {
+  return request<FamilyState>(`/family/members/${memberId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function removeFamilyMember(
+  memberId: number,
+): Promise<APIResponse<FamilyState>> {
+  return request<FamilyState>(`/family/members/${memberId}`, {
+    method: 'DELETE',
+  })
+}
+
+export function updateBudgetSplit(
+  data: BudgetSplitRequest,
+): Promise<APIResponse<FamilyState>> {
+  return request<FamilyState>('/family/budget-split', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   })
 }

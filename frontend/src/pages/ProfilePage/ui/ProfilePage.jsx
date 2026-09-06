@@ -1,4 +1,6 @@
-import ProfileDetails from "../sections/ProfileDetails.jsx";
+import NameWidget from "../sections/NameWidget.jsx";
+import RoleWidget from "../sections/RoleWidget.jsx";
+import PasswordWidget from "../sections/PasswordWidget.jsx";
 import ReminderSettings from "../sections/ReminderSettings.jsx";
 import "./ProfilePage.css";
 
@@ -12,7 +14,9 @@ function ProfilePage() {
           <p className="page__lead">Ваши данные и роль в семейном бюджете.</p>
         </div>
       </header>
-      <ProfileDetails />
+      <NameWidget />
+      <RoleWidget />
+      <PasswordWidget />
       <ReminderSettings />
     </section>
   );
