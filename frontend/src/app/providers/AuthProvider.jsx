@@ -9,14 +9,22 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    setIsLoading(true) // Явно включаем загрузку перед проверкой
     getCurrentUser()
       .then((response) => {
-        if (!response.error && response.data) {
+        if (response && !response.error && response.data) {
           setUser(response.data)
+        } else {
+          setUser(null) // Если бэкенд ответил ошибкой 401 — пользователя точно нет
         }
+      })
+      .catch((err) => {
+        console.error("Ошибка проверки сессии:", err)
+        setUser(null)
       })
       .finally(() => setIsLoading(false))
   }, [])
+
 
   async function login(credentials) {
     const response = await loginUser(credentials)
@@ -44,8 +52,18 @@ export function AuthProvider({ children }) {
     return response
   }
 
+  async function refreshUser() {
+    const response = await getCurrentUser()
+
+    if (!response.error && response.data) {
+      setUser(response.data)
+    }
+
+    return response
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

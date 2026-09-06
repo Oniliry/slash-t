@@ -1,11 +1,16 @@
 import { request } from './base'
 import type { APIResponse } from './types'
 
+export type UserRole = 'adult' | 'child'
+
 export interface User {
   id: number;
   name: string;
   login: string;
   created_at: string;
+  family_id: number | null;
+  role: UserRole | null;
+  monthly_income: number | null;
 }
 
 export interface RegisterUserRequest {

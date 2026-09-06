@@ -12,6 +12,7 @@ from database.base import db
 
 from schemas.base import APIResponse
 from routers.auth import router as auth_router
+from routers.family import router as family_router
 from routers.slash_t import router as slash_t_router
 
 @asynccontextmanager
@@ -38,6 +39,7 @@ app.add_middleware(
 )
 app.include_router(slash_t_router)
 app.include_router(auth_router)
+app.include_router(family_router)
 
 @app.get("/health")
 async def health():
