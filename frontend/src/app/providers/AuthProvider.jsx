@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
     const response = await loginUser(credentials)
 
     if (!response.error && response.data) {
-      setUser(response.data)
+      setUser(response.data.user)
     }
 
     return response
@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
     const response = await registerUser(credentials)
 
     if (!response.error && response.data) {
-      setUser(response.data)
+      setUser(response.data.user)
     }
 
     return response

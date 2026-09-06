@@ -1,0 +1,245 @@
+/* Кнопка "+" в верхнем баре (десктоп) */
+.navbar__add {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  background: #21a038;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.navbar__add:hover {
+  background: #177a2b;
+}
+
+.navbar__add:active {
+  transform: scale(0.94);
+}
+
+/* На мобильном экране кнопка "+" остаётся только в нижнем таббаре */
+@media (max-width: 700px) {
+  .navbar__add {
+    display: none;
+  }
+}
+
+/* Кнопка "+" в нижнем таббаре (мобайл) */
+.tab-bar__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.tab-bar__add-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin-top: -26px;
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+  background: #21a038;
+  border: 3px solid #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(33, 160, 56, 0.4);
+  transition: transform 160ms ease;
+}
+
+.tab-bar__add:active .tab-bar__add-icon {
+  transform: scale(0.92);
+}
+
+/* Оверлей и модалка */
+.add-purchase-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(23, 32, 42, 0.45);
+}
+
+@media (min-width: 701px) {
+  .add-purchase-overlay {
+    align-items: center;
+  }
+}
+
+.add-purchase-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: calc(100vh - 32px);
+  padding: 24px;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+}
+
+.add-purchase-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.add-purchase-modal__header h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.add-purchase-modal__close {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: #66727e;
+  font-size: 20px;
+  background: #f4f6f8;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.add-purchase-modal__field {
+  margin: 0 0 8px;
+  color: #17202a;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.add-purchase-modal__amount-row {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.add-purchase-modal__amount-row input {
+  width: 100%;
+  padding: 14px 36px 14px 14px;
+  font-size: 22px;
+  font-weight: 650;
+  background: #f4f6f8;
+  border: 1px solid #e2e7ec;
+  border-radius: 10px;
+}
+
+.add-purchase-modal__amount-row input:focus {
+  outline: 2px solid #21a038;
+  outline-offset: -1px;
+}
+
+.add-purchase-modal__currency {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  color: #8a969f;
+  font-size: 18px;
+  transform: translateY(-50%);
+}
+
+.add-purchase-modal__owners {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-purchase-modal__owner {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e2e7ec;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.add-purchase-modal__owner small {
+  color: #8a969f;
+  font-size: 12px;
+}
+
+.add-purchase-modal__owner--active {
+  background: #e6f5e9;
+  border-color: #21a038;
+}
+
+.add-purchase-modal__owner--active small {
+  color: #177a2b;
+}
+
+.add-purchase-modal__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-purchase-modal__category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  color: #17202a;
+  font-size: 13px;
+  background: #ffffff;
+  border: 1px solid #e2e7ec;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.add-purchase-modal__category--active {
+  color: #177a2b;
+  background: #e6f5e9;
+  border-color: #21a038;
+}
+
+.add-purchase-modal__hint {
+  margin: 0 0 16px;
+  color: #66727e;
+  font-size: 13px;
+}
+
+.add-purchase-modal__error {
+  margin: 0 0 12px;
+  color: #d64545;
+  font-size: 13px;
+}
+
+.add-purchase-modal__submit {
+  width: 100%;
+  padding: 14px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 650;
+  background: #17202a;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.add-purchase-modal__submit:disabled {
+  background: #c7cdd3;
+  cursor: not-allowed;
+}
+
+.add-purchase-modal__submit:not(:disabled):hover {
+  background: #2b3846;
+}

@@ -1,10 +1,11 @@
 from typing import Annotated, Optional
 
-from fastapi import Cookie, Depends, HTTPException
+from fastapi import Depends, HTTPException
 
 from database.base import db
 from database.models.user import User
 from database.repositories import FamilyRepository, UserRepository
+from dependencies.token import get_bearer_token
 from services.auth_service import AuthService
 from services.family_service import FamilyService
 
@@ -42,16 +43,16 @@ def get_family_service(
 
 
 async def get_current_active_user(
-    access_token: Optional[str] = Cookie(default=None),
+    access_token: Optional[str] = Depends(get_bearer_token),
     user_repo: UserRepository = Depends(get_user_repo_for_family),
 ) -> User:
     """
-    Достаёт текущего авторизованного пользователя из JWT-cookie.
+    Достаёт текущего авторизованного пользователя из JWT в заголовке Authorization.
 
     Используется роутером семьи, которому для операций (создание семьи,
     выбор роли и т.д.) нужен не просто факт авторизации, а сам объект User.
 
-    :param access_token: JWT-токен из HttpOnly cookie.
+    :param access_token: JWT-токен из заголовка Authorization: Bearer.
     :param user_repo: Репозиторий пользователей, предоставленный FastAPI.
     :return: Текущий авторизованный пользователь.
     :raises HTTPException: 401, если пользователь не авторизован.
