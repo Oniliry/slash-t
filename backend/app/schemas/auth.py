@@ -1,6 +1,10 @@
 from datetime import datetime
+from decimal import Decimal
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from database.models.user import UserRole
 
 
 class UserRegisterRequest(BaseModel):
@@ -43,6 +47,12 @@ class UserResponse(BaseModel):
     name: str
     login: str
     created_at: datetime
+    #: Идентификатор семьи, если пользователь уже присоединился к ней.
+    family_id: Optional[int] = None
+    #: Роль пользователя в семье, если она уже выбрана.
+    role: Optional[UserRole] = None
+    #: Примерный месячный доход, указывается только взрослыми участниками.
+    monthly_income: Optional[Decimal] = None
 
     model_config = ConfigDict(from_attributes=True)
 
