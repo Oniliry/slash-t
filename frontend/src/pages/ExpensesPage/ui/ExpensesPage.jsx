@@ -1,8 +1,47 @@
+import { useCallback, useEffect, useState } from "react";
+
+import { getExpenses } from "../../../shared/api/expenses.ts";
+import { getMyFamily } from "../../../shared/api/family.ts";
 import ExpenseSummary from "../sections/ExpenseSummary.jsx";
 import ExpenseList from "../sections/ExpenseList.jsx";
 import "./ExpensesPage.css";
 
 function ExpensesPage() {
+  const [expenses, setExpenses] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadExpenses = useCallback(async () => {
+    const response = await getExpenses();
+
+    if (!response.error && response.data) {
+      setExpenses(response.data);
+      setError("");
+    } else if (response.type !== "family_required") {
+      setError(response.message ?? "Не удалось загрузить расходы.");
+    }
+
+    setIsLoading(false);
+  }, []);
+
+  const loadMembers = useCallback(async () => {
+    const response = await getMyFamily();
+
+    if (!response.error && response.data) {
+      setMembers(response.data.members);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadExpenses();
+    loadMembers();
+
+    // Обновляем списки сразу после добавления покупки через кнопку "+"
+    window.addEventListener("slash-t:expense-created", loadExpenses);
+    return () => window.removeEventListener("slash-t:expense-created", loadExpenses);
+  }, [loadExpenses, loadMembers]);
+
   return (
     <section className="page">
       <header className="page__header">
@@ -14,8 +53,8 @@ function ExpensesPage() {
           </p>
         </div>
       </header>
-      <ExpenseSummary />
-      <ExpenseList />
+      <ExpenseSummary expenses={expenses} members={members} isLoading={isLoading} />
+      <ExpenseList expenses={expenses} isLoading={isLoading} error={error} />
     </section>
   );
 }

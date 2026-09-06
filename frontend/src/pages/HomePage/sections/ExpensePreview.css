@@ -50,6 +50,11 @@
   font-size: 14px;
   white-space: nowrap;
 }
+.list__empty {
+  margin: 0;
+  color: #66727e;
+  font-size: 13px;
+}
 @media (max-width: 480px) {
   .card {
     padding: 20px;

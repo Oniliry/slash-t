@@ -57,8 +57,24 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AuthResponse(BaseModel):
+    """
+    Схема ответа при входе/регистрации: данные пользователя и токен сессии.
+
+    :field user: Публичные данные пользователя.
+    :field access_token: JWT-токен текущей сессии. Хранится на фронтенде
+        в sessionStorage (в рамках одной вкладки браузера), а не в cookie —
+        это нужно, чтобы вход в аккаунт в одной вкладке не сбрасывал сессию
+        в другой открытой вкладке того же сайта.
+    """
+
+    user: UserResponse
+    access_token: str
+
+
 __all__ = [
     "UserRegisterRequest",
     "UserLoginRequest",
     "UserResponse",
+    "AuthResponse",
 ]

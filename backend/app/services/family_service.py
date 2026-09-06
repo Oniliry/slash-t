@@ -9,12 +9,15 @@ from database.repositories.family_repo import FamilyRepository
 from database.repositories.user_repo import UserRepository
 from schemas.base import APIResponse
 from schemas.family import (
+    BudgetSplitRequest,
     CreateFamilyRequest,
     FamilyMemberResponse,
     FamilyResponse,
     FamilyStateResponse,
     JoinFamilyRequest,
+    RenameFamilyRequest,
     SetRoleRequest,
+    UpdateMemberRequest,
 )
 
 #: Алфавит для генерации кода приглашения: заглавные буквы и цифры без похожих символов.
@@ -53,11 +56,16 @@ class FamilyService:
         raise RuntimeError("Не удалось сгенерировать уникальный код приглашения.")
 
     @staticmethod
-    def _build_member_responses(members: List[User]) -> List[FamilyMemberResponse]:
+    def _build_member_responses(
+        members: List[User],
+        created_by: int,
+    ) -> List[FamilyMemberResponse]:
         """
-        Считает долю каждого взрослого в общем доходе семьи и собирает список участников.
+        Считает долю каждого взрослого в общем доходе семьи, помечает админа
+        и возвращает список участников, отсортированный по убыванию дохода.
 
         :param members: Список пользователей семьи.
+        :param created_by: Идентификатор создателя (админа) семьи.
         :return: Список участников с рассчитанной долей бюджета (только для взрослых).
         """
         total_income = sum(
@@ -78,8 +86,11 @@ class FamilyService:
                     role=member.role,
                     monthly_income=member.monthly_income,
                     income_share=income_share,
+                    is_admin=member.id == created_by,
                 )
             )
+
+        responses.sort(key=lambda item: item.monthly_income or Decimal("0"), reverse=True)
 
         return responses
 
@@ -213,10 +224,224 @@ class FamilyService:
         return APIResponse.success(
             data=FamilyStateResponse(
                 family=FamilyResponse.model_validate(family),
-                members=self._build_member_responses(members),
+                members=self._build_member_responses(members, family.created_by),
             ),
             message="Данные семьи успешно получены.",
         )
+
+    @staticmethod
+    def _require_admin(user: User, family: Family) -> Optional[APIResponse]:
+        """
+        Проверяет, что текущий пользователь — админ (создатель) семьи.
+
+        :param user: Текущий авторизованный пользователь.
+        :param family: Семья, в рамках которой выполняется действие.
+        :return: Ответ с ошибкой доступа, если пользователь не админ, иначе None.
+        """
+        if family.created_by != user.id:
+            return APIResponse.fail(
+                message="Изменять семью может только её создатель (админ).",
+                status_code=403,
+                type="admin_required",
+            )
+        return None
+
+    async def _get_user_family_or_error(
+        self,
+        user: User,
+    ) -> tuple[Optional[Family], Optional[APIResponse]]:
+        """
+        Достаёт семью текущего пользователя или готовый ответ с ошибкой.
+
+        :param user: Текущий авторизованный пользователь.
+        :return: Пара (семья, ошибка) — ровно одно из значений будет None.
+        """
+        if user.family_id is None:
+            return None, APIResponse.fail(
+                message="Вы ещё не состоите ни в одной семье.",
+                status_code=404,
+                type="family_required",
+            )
+
+        family = await self.family_repo.get_family(user.family_id)
+        if family is None:
+            return None, APIResponse.fail(
+                message="Семья не найдена.",
+                status_code=404,
+                type="family_not_found",
+            )
+
+        return family, None
+
+    async def rename_family(
+        self,
+        user: User,
+        data: RenameFamilyRequest,
+    ) -> APIResponse[FamilyResponse]:
+        """
+        Переименовывает семью. Доступно только админу (создателю).
+
+        :param user: Текущий авторизованный пользователь.
+        :param data: Новое название семьи.
+        :return: Обновлённые данные семьи или сообщение об ошибке.
+        """
+        family, error = await self._get_user_family_or_error(user)
+        if error is not None:
+            return error
+
+        admin_error = self._require_admin(user, family)
+        if admin_error is not None:
+            return admin_error
+
+        updated_family = await self.family_repo.rename_family(family.id, data.name.strip())
+
+        return APIResponse.success(
+            data=FamilyResponse.model_validate(updated_family),
+            message="Название семьи обновлено.",
+        )
+
+    async def update_member(
+        self,
+        user: User,
+        member_id: int,
+        data: UpdateMemberRequest,
+    ) -> APIResponse[FamilyStateResponse]:
+        """
+        Обновляет имя и/или доход участника семьи. Доступно только админу.
+
+        Доход ребёнка всегда остаётся None — присланное значение для
+        участника с ролью child игнорируется.
+
+        :param user: Текущий авторизованный пользователь (должен быть админом).
+        :param member_id: Идентификатор редактируемого участника.
+        :param data: Новое имя и/или доход участника.
+        :return: Обновлённое состояние семьи или сообщение об ошибке.
+        """
+        family, error = await self._get_user_family_or_error(user)
+        if error is not None:
+            return error
+
+        admin_error = self._require_admin(user, family)
+        if admin_error is not None:
+            return admin_error
+
+        member = await self.user_repo.get_user(member_id)
+        if member is None or member.family_id != family.id:
+            return APIResponse.fail(
+                message="Участник не найден в этой семье.",
+                status_code=404,
+                type="member_not_found",
+            )
+
+        set_income = data.monthly_income is not None and member.role == "adult"
+        new_name = data.name.strip() if data.name is not None else None
+
+        await self.user_repo.update_member_fields(
+            member_id,
+            name=new_name,
+            monthly_income=data.monthly_income if set_income else None,
+            set_income=set_income,
+        )
+
+        return await self.get_my_family(user)
+
+    async def remove_member(
+        self,
+        user: User,
+        member_id: int,
+    ) -> APIResponse[FamilyStateResponse]:
+        """
+        Удаляет участника из семьи. Доступно только админу.
+
+        Участник теряет привязку к семье, роль и доход — при следующем
+        входе ему снова нужно будет создать или выбрать семью.
+
+        :param user: Текущий авторизованный пользователь (должен быть админом).
+        :param member_id: Идентификатор удаляемого участника.
+        :return: Обновлённое состояние семьи или сообщение об ошибке.
+        """
+        family, error = await self._get_user_family_or_error(user)
+        if error is not None:
+            return error
+
+        admin_error = self._require_admin(user, family)
+        if admin_error is not None:
+            return admin_error
+
+        if member_id == user.id:
+            return APIResponse.fail(
+                message="Админ не может удалить сам себя из семьи.",
+                status_code=409,
+                type="cannot_remove_self",
+            )
+
+        member = await self.user_repo.get_user(member_id)
+        if member is None or member.family_id != family.id:
+            return APIResponse.fail(
+                message="Участник не найден в этой семье.",
+                status_code=404,
+                type="member_not_found",
+            )
+
+        await self.user_repo.clear_user_family(member_id)
+
+        return await self.get_my_family(user)
+
+    async def update_budget_split(
+        self,
+        user: User,
+        data: BudgetSplitRequest,
+    ) -> APIResponse[FamilyStateResponse]:
+        """
+        Перераспределяет доход между двумя соседними взрослыми участниками
+        через перетаскивание точки на полоске общего бюджета.
+
+        Сумма доходов пары остаётся неизменной, поэтому общий бюджет семьи
+        не меняется — меняется только то, как он поделён внутри пары.
+
+        :param user: Текущий авторизованный пользователь (должен быть админом).
+        :param data: Пара участников и новая доля первого из них в сумме их доходов.
+        :return: Обновлённое состояние семьи или сообщение об ошибке.
+        """
+        family, error = await self._get_user_family_or_error(user)
+        if error is not None:
+            return error
+
+        admin_error = self._require_admin(user, family)
+        if admin_error is not None:
+            return admin_error
+
+        if data.member_a_id == data.member_b_id:
+            return APIResponse.fail(
+                message="Нужны два разных участника.",
+                status_code=400,
+                type="invalid_member_pair",
+            )
+
+        member_a = await self.user_repo.get_user(data.member_a_id)
+        member_b = await self.user_repo.get_user(data.member_b_id)
+
+        for member in (member_a, member_b):
+            if member is None or member.family_id != family.id or member.role != "adult":
+                return APIResponse.fail(
+                    message="Перераспределять бюджет можно только между взрослыми участниками этой семьи.",
+                    status_code=404,
+                    type="member_not_found",
+                )
+
+        pair_total = (member_a.monthly_income or Decimal("0")) + (member_b.monthly_income or Decimal("0"))
+        ratio = Decimal(str(data.member_a_ratio))
+        new_income_a = (pair_total * ratio).quantize(Decimal("0.01"))
+        new_income_b = (pair_total - new_income_a).quantize(Decimal("0.01"))
+
+        await self.user_repo.update_member_fields(
+            member_a.id, name=None, monthly_income=new_income_a, set_income=True,
+        )
+        await self.user_repo.update_member_fields(
+            member_b.id, name=None, monthly_income=new_income_b, set_income=True,
+        )
+
+        return await self.get_my_family(user)
 
 
 __all__ = [

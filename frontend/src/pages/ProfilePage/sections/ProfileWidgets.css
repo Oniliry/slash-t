@@ -1,0 +1,126 @@
+.profile-widget {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e7ec;
+  border-radius: 10px;
+}
+
+.profile-widget + .profile-widget {
+  margin-top: 16px;
+}
+
+.profile-widget h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.profile-widget__hint {
+  margin: 0 0 18px;
+  color: #66727e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.profile-widget__row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.profile-widget__field {
+  flex: 1;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.profile-widget__field label {
+  color: #8a969f;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.profile-widget__field input {
+  padding: 11px 12px;
+  font: inherit;
+  border: 1px solid #d8e0e6;
+  border-radius: 7px;
+}
+
+.profile-widget__field input:disabled {
+  color: #8a969f;
+  background: #f4f6f8;
+  cursor: not-allowed;
+}
+
+.profile-widget__save {
+  flex-shrink: 0;
+  padding: 11px 18px;
+  color: #ffffff;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #17202a;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.profile-widget__save:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.profile-widget__readonly-list {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.profile-widget__readonly-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.profile-widget__readonly-list dt {
+  color: #8a969f;
+  font-size: 13px;
+}
+
+.profile-widget__readonly-list dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-widget__message {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+}
+
+.profile-widget__message--error {
+  color: #c2413b;
+}
+
+.profile-widget__message--success {
+  color: #2f8f5b;
+}
+
+@media (max-width: 480px) {
+  .profile-widget {
+    padding: 20px;
+  }
+
+  .profile-widget__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-widget__save {
+    width: 100%;
+  }
+}

@@ -1,35 +1,51 @@
+import { getExpenseCategory } from "../../../shared/lib/expenseCategories.js";
+import {
+  formatExpenseAmount,
+  formatExpenseDate,
+  formatExpenseOwner,
+} from "../../../shared/lib/expenseFormat.js";
 import "./ExpenseList.css";
 
-function ExpenseList() {
+function ExpenseList({ expenses, isLoading, error }) {
   return (
     <article className="card">
       <div className="section-heading">
         <h2>История покупок</h2>
         <span className="section-heading__hint">Все категории</span>
       </div>
-      <div className="list">
-        <div className="list__row">
-          <span>
-            <b>Продукты · Перекрёсток</b>
-            <small>Сегодня · Алексей · общий расход</small>
-          </span>
-          <strong>4 280 ₽</strong>
+
+      {isLoading && <p className="list__empty">Загружаем историю покупок...</p>}
+
+      {!isLoading && error && <p className="list__empty">{error}</p>}
+
+      {!isLoading && !error && expenses.length === 0 && (
+        <p className="list__empty">
+          Пока нет ни одной покупки — добавьте первую через кнопку «+».
+        </p>
+      )}
+
+      {!isLoading && !error && expenses.length > 0 && (
+        <div className="list">
+          {expenses.map((expense) => {
+            const category = getExpenseCategory(expense.category);
+            return (
+              <div className="list__row" key={expense.id}>
+                <span>
+                  <b>
+                    <span aria-hidden="true">{category.icon}</span> {category.label}
+                  </b>
+                  <small>
+                    {formatExpenseDate(expense.created_at)}
+                    {expense.payer_name ? ` · ${expense.payer_name}` : ""} ·{" "}
+                    {formatExpenseOwner(expense)}
+                  </small>
+                </span>
+                <strong>{formatExpenseAmount(expense.amount)}</strong>
+              </div>
+            );
+          })}
         </div>
-        <div className="list__row">
-          <span>
-            <b>Коммунальные услуги</b>
-            <small>Вчера · автоматический платёж</small>
-          </span>
-          <strong>6 900 ₽</strong>
-        </div>
-        <div className="list__row">
-          <span>
-            <b>Кофе и перекус</b>
-            <small>4 сент. · личный расход</small>
-          </span>
-          <strong>380 ₽</strong>
-        </div>
-      </div>
+      )}
     </article>
   );
 }

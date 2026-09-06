@@ -1,6 +1,6 @@
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.6fr 1fr 1fr;
   gap: 16px;
   margin-bottom: 16px;
 }
@@ -12,7 +12,7 @@
 }
 .card__eyebrow {
   margin: 0 0 8px;
-  color: #d97757;
+  color: #21a038;
   font-size: 11px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -31,11 +31,31 @@
 }
 @media (max-width: 760px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "total total"
+      "shared personal";
+  }
+
+  .card--total {
+    grid-area: total;
+  }
+
+  .card--shared {
+    grid-area: shared;
+  }
+
+  .card--personal {
+    grid-area: personal;
   }
 }
 @media (max-width: 480px) {
   .card {
     padding: 20px;
+  }
+
+  .card--shared .stat__value,
+  .card--personal .stat__value {
+    font-size: 20px;
   }
 }
