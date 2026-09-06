@@ -1,7 +1,6 @@
 import NameWidget from "../sections/NameWidget.jsx";
 import RoleWidget from "../sections/RoleWidget.jsx";
 import PasswordWidget from "../sections/PasswordWidget.jsx";
-import ReminderSettings from "../sections/ReminderSettings.jsx";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -17,7 +16,6 @@ function ProfilePage() {
       <NameWidget />
       <RoleWidget />
       <PasswordWidget />
-      <ReminderSettings />
     </section>
   );
 }

@@ -1,0 +1,125 @@
+.card {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e7ec;
+  border-radius: 10px;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+.section-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.list {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  background: #e2e7ec;
+  border: 1px solid #e2e7ec;
+  border-radius: 8px;
+}
+.list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+}
+.list__row span {
+  display: grid;
+  gap: 5px;
+}
+.list__row b {
+  font-size: 14px;
+}
+.list__row small {
+  color: #8a969f;
+  font-size: 12px;
+}
+
+.debts-widget {
+  margin-bottom: 16px;
+}
+
+.debts-widget__hint {
+  margin: 0;
+  color: #66727e;
+  font-size: 13px;
+}
+
+.debts-widget__error {
+  margin: 0 0 14px;
+  color: #d64545;
+  font-size: 13px;
+}
+
+.debts-widget__group + .debts-widget__group {
+  margin-top: 18px;
+}
+
+.debts-widget__group-title {
+  margin: 0 0 8px;
+  color: #66727e;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.debts-widget__amount {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.debts-widget__amount--negative {
+  color: #d64545;
+}
+
+.debts-widget__amount--positive {
+  color: #2f8f5b;
+}
+
+.debts-widget__owed-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.debts-widget__confirm {
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  background: #17202a;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.debts-widget__confirm:hover:not(:disabled) {
+  background: #2b3846;
+}
+
+.debts-widget__confirm:disabled {
+  background: #c7cdd3;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 20px;
+  }
+  .debts-widget__owed-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+}

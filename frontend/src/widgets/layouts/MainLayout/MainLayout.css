@@ -74,7 +74,7 @@
 
 .navbar__logout:hover,
 .sidebar__logout:hover {
-  color: #d97757;
+  color: #21a038;
 }
 
 .main-layout__body {
@@ -180,20 +180,40 @@
     left: 0;
     z-index: 10;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
     background: #ffffff;
     border-top: 1px solid #e2e7ec;
   }
 
   .tab-bar__link {
-    padding: 8px 4px;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 4px;
+    color: #b7c0c8;
     text-align: center;
+  }
+
+  .tab-bar__icon {
+    width: 22px;
+    height: 22px;
   }
 
   .tab-bar__link--active {
     color: #17202a;
     font-weight: 650;
+  }
+
+  .tab-bar__visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
   }
 }
