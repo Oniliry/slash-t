@@ -13,7 +13,7 @@
 
 .spending-chart__track {
   fill: none;
-  stroke: #eef2f5;
+  stroke: var(--glass-line);
   stroke-width: 16;
 }
 
@@ -43,7 +43,7 @@
 
 .spending-chart__legend-name {
   overflow: hidden;
-  color: #17202a;
+  color: var(--ink);
   font-weight: 650;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -52,7 +52,8 @@
 .spending-chart__legend-value {
   flex-shrink: 0;
   margin-left: auto;
-  color: #8a969f;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
