@@ -1,0 +1,5 @@
+slasht.ru, www.slasht.ru {
+	# Весь трафик, включая /api/*, идёт на frontend (Vite dev server) —
+	# он сам проксирует /api на backend:8000 (см. frontend/vite.config.js).
+	reverse_proxy frontend:5173
+}

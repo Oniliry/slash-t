@@ -5,11 +5,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import jwt
-from fastapi import Response
 
 from core.config import JWT_ALGORITHM, JWT_EXPIRE_MINUTES, JWT_SECRET
 from database.repositories.user_repo import UserRepository
-from schemas.auth import UserLoginRequest, UserRegisterRequest, UserResponse
+from schemas.auth import AuthResponse, UserLoginRequest, UserRegisterRequest, UserResponse
 from schemas.base import APIResponse
 
 
@@ -83,47 +82,16 @@ class AuthService:
         }
         return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    @staticmethod
-    def set_auth_cookie(response: Response, token: str) -> None:
-        """
-        Сохраняет JWT-токен в HttpOnly cookie.
-
-        :param response: HTTP-ответ FastAPI.
-        :param token: JWT-токен авторизации.
-        """
-        response.set_cookie(
-            key="access_token",
-            value=token,
-            httponly=True,
-            secure=False,
-            samesite="lax",
-            max_age=JWT_EXPIRE_MINUTES * 60,
-        )
-
-    @staticmethod
-    def delete_auth_cookie(response: Response) -> None:
-        """
-        Удаляет JWT-токен авторизации из cookie.
-
-        :param response: HTTP-ответ FastAPI.
-        """
-        response.delete_cookie(
-            key="access_token",
-            httponly=True,
-            secure=False,
-            samesite="lax",
-            path="/",
-        )
-
-    def logout_user(self, response: Response) -> APIResponse[None]:
+    def logout_user(self) -> APIResponse[None]:
         """
         Завершает авторизацию пользователя.
 
-        :param response: HTTP-ответ, из которого будет удалена cookie.
+        Токен — стейтлес JWT без серверного хранения сессий, поэтому на
+        бэкенде отзывать нечего: фронтенд просто удаляет токен из
+        sessionStorage своей вкладки.
+
         :return: Подтверждение завершения сессии.
         """
-        self.delete_auth_cookie(response)
-
         return APIResponse.success(message="Выход выполнен успешно.")
 
     @staticmethod
@@ -131,7 +99,7 @@ class AuthService:
         """
         Извлекает идентификатор пользователя из JWT-токена.
 
-        :param token: JWT-токен из cookie.
+        :param token: JWT-токен из заголовка Authorization: Bearer.
         :return: Идентификатор пользователя или None для недействительного токена.
         """
         try:
@@ -148,14 +116,12 @@ class AuthService:
     async def register_user(
         self,
         data: UserRegisterRequest,
-        response: Response,
-    ) -> APIResponse[UserResponse]:
+    ) -> APIResponse[AuthResponse]:
         """
         Регистрирует пользователя в системе.
 
         :param data: Данные для регистрации пользователя.
-        :param response: HTTP-ответ, в который будет установлена cookie авторизации.
-        :return: Публичные данные созданного пользователя или сообщение об ошибке.
+        :return: Данные пользователя вместе с токеном сессии или сообщение об ошибке.
         """
         existing_user = await self.repo.get_user_by_login(data.login)
         if existing_user is not None:
@@ -169,24 +135,24 @@ class AuthService:
             login=data.login,
             password_hash=self.hash_password(data.password),
         )
-        self.set_auth_cookie(response, self.create_access_token(user.id))
 
         return APIResponse.success(
-            data=UserResponse.model_validate(user),
+            data=AuthResponse(
+                user=UserResponse.model_validate(user),
+                access_token=self.create_access_token(user.id),
+            ),
             message="Пользователь успешно зарегистрирован.",
         )
 
     async def login_user(
         self,
         data: UserLoginRequest,
-        response: Response,
-    ) -> APIResponse[UserResponse]:
+    ) -> APIResponse[AuthResponse]:
         """
         Проверяет логин и пароль пользователя.
 
         :param data: Данные для входа пользователя.
-        :param response: HTTP-ответ, в который будет установлена cookie авторизации.
-        :return: Публичные данные пользователя или ошибку авторизации.
+        :return: Данные пользователя вместе с токеном сессии или ошибку авторизации.
         """
         user_row = await self.repo.get_user_by_login(data.login)
         if user_row is None or not self.verify_password(
@@ -199,18 +165,19 @@ class AuthService:
                 type="invalid_credentials",
             )
 
-        self.set_auth_cookie(response, self.create_access_token(int(user_row["id"])))
-
         return APIResponse.success(
-            data=UserResponse.model_validate(dict(user_row)),
+            data=AuthResponse(
+                user=UserResponse.model_validate(dict(user_row)),
+                access_token=self.create_access_token(int(user_row["id"])),
+            ),
             message="Вход выполнен успешно.",
         )
 
     async def get_current_user(self, token: Optional[str]) -> APIResponse[UserResponse]:
         """
-        Возвращает текущего пользователя по JWT из cookie.
+        Возвращает текущего пользователя по JWT из заголовка Authorization: Bearer.
 
-        :param token: JWT-токен из cookie access_token.
+        :param token: JWT-токен из заголовка Authorization: Bearer.
         :return: Данные текущего пользователя или ошибку авторизации.
         """
         if not token:

@@ -1,0 +1,317 @@
+.family-widget {
+  padding: 24px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--glass-blur) saturate(1.5);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.5);
+  box-shadow: var(--glass-shadow);
+}
+
+.family-widget + .family-widget {
+  margin-top: 16px;
+}
+
+/* --- Название семьи --- */
+.family-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.family-name h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.family-name input {
+  flex: 1;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-sm);
+}
+
+.family-name__edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--ink-soft);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.family-name__edit:hover {
+  color: var(--ink);
+  background: rgba(16, 36, 26, 0.06);
+}
+
+/* --- Общий бюджет --- */
+.budget-widget h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.budget-widget__total {
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-bar {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 40px;
+  overflow: visible;
+  background: rgba(16, 36, 26, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.budget-bar__segment {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.budget-bar__segment:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.budget-bar__segment:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.budget-bar__handle {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  background: #ffffff;
+  border: 3px solid var(--green-deep);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.budget-bar__handle:hover {
+  background: var(--green-deep);
+}
+
+.budget-widget__hint {
+  margin: 14px 0 0;
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+/* --- Список участников --- */
+.member-list h2 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+
+.member-row--clickable {
+  cursor: pointer;
+}
+
+.member-row--clickable:hover {
+  background: rgba(16, 36, 26, 0.05);
+}
+
+.member-row + .member-row {
+  border-top: 1px solid var(--glass-line);
+}
+
+.member-row__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.member-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-row__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.member-row__admin-badge {
+  padding: 1px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: rgba(16, 36, 26, 0.06);
+  border-radius: var(--radius-pill);
+}
+
+.member-row__role {
+  margin-top: 2px;
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+.member-row__income {
+  flex-shrink: 0;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.member-row__share {
+  display: block;
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.member-edit {
+  display: grid;
+  gap: 10px;
+  padding: 12px 8px 16px;
+  margin-top: -4px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.member-edit__row {
+  display: flex;
+  gap: 10px;
+}
+
+.member-edit__field {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.member-edit__field label {
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.member-edit__field input {
+  padding: 9px 10px;
+  font: inherit;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-sm);
+}
+
+.member-edit__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.member-edit__save {
+  padding: 9px 16px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.member-edit__remove {
+  padding: 9px 16px;
+  color: var(--coral);
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--coral-soft);
+  border: 1px solid rgba(221, 79, 47, 0.25);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.member-edit__save:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* --- Код приглашения --- */
+.invite-widget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.invite-widget__label {
+  margin: 0 0 4px;
+  color: var(--ink-faint);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.invite-widget__code {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.invite-widget__copy {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-pill);
+}
+
+@media (max-width: 480px) {
+  .family-widget {
+    padding: 18px;
+  }
+
+  .member-row__income {
+    font-size: 13px;
+  }
+}

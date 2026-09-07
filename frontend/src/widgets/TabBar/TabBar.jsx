@@ -1,23 +1,44 @@
 import { NavLink } from 'react-router-dom'
 
-const navigationItems = [
-  { to: '/', label: 'Главная', end: true },
-  { to: '/expenses', label: 'Расходы' },
-  { to: '/family', label: 'Семья' },
-  { to: '/profile', label: 'Профиль' },
+import AddPurchaseButton from '../AddPurchase/AddPurchaseButton.jsx'
+import { FamilyIcon, HomeIcon, ProfileIcon, ReceiptIcon } from './icons.jsx'
+
+const leftItems = [
+  { to: '/', label: 'Главная', end: true, Icon: HomeIcon },
+  { to: '/expenses', label: 'Расходы', Icon: ReceiptIcon },
+]
+
+const rightItems = [
+  { to: '/family', label: 'Семья', Icon: FamilyIcon },
+  { to: '/profile', label: 'Профиль', Icon: ProfileIcon },
 ]
 
 function TabBar() {
   return (
     <nav className="tab-bar" aria-label="Мобильная навигация">
-      {navigationItems.map((item) => (
+      {leftItems.map(({ to, label, end, Icon }) => (
         <NavLink
           className={({ isActive }) => `tab-bar__link${isActive ? ' tab-bar__link--active' : ''}`}
-          end={item.end}
-          key={item.to}
-          to={item.to}
+          end={end}
+          key={to}
+          to={to}
+          aria-label={label}
         >
-          {item.label}
+          <Icon />
+          <span className="tab-bar__visually-hidden">{label}</span>
+        </NavLink>
+      ))}
+      <AddPurchaseButton variant="tabbar" />
+      {rightItems.map(({ to, label, end, Icon }) => (
+        <NavLink
+          className={({ isActive }) => `tab-bar__link${isActive ? ' tab-bar__link--active' : ''}`}
+          end={end}
+          key={to}
+          to={to}
+          aria-label={label}
+        >
+          <Icon />
+          <span className="tab-bar__visually-hidden">{label}</span>
         </NavLink>
       ))}
     </nav>

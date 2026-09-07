@@ -1,0 +1,259 @@
+/* Кнопка "+" в верхнем баре (десктоп) — сплошной зелёный, самый
+   насыщенный элемент на плавающем стекле навбара. */
+.navbar__add {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: #ffffff;
+  font-size: 21px;
+  line-height: 1;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 14px -6px rgba(11, 92, 34, 0.6);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.navbar__add:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 18px -6px rgba(11, 92, 34, 0.7);
+}
+
+.navbar__add:active {
+  transform: scale(0.93);
+}
+
+@media (max-width: 700px) {
+  .navbar__add {
+    display: none;
+  }
+}
+
+/* Кнопка "+" в нижнем таббаре (мобайл) — приподнятая "таблетка" над
+   стеклянной капсулой навигации, как основная CTA в приложении Сбера. */
+.tab-bar__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.tab-bar__add-icon {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  place-items: center;
+  margin-top: -24px;
+  color: #ffffff;
+  font-size: 26px;
+  line-height: 1;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 3px solid var(--paper-warm);
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 22px -6px rgba(11, 92, 34, 0.55);
+  transition: transform 160ms ease;
+}
+
+.tab-bar__add:active .tab-bar__add-icon {
+  transform: scale(0.92);
+}
+
+/* Оверлей и модалка — стекло поверх стекла, поэтому фон затемняем
+   сильнее и держим бэкдроп-блюр на самой модалке. */
+.add-purchase-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 20, 13, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@media (min-width: 701px) {
+  .add-purchase-overlay {
+    align-items: center;
+  }
+}
+
+.add-purchase-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: calc(100vh - 32px);
+  padding: 24px;
+  overflow-y: auto;
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--glass-blur) saturate(1.6);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.6);
+  box-shadow: var(--glass-shadow);
+}
+
+.add-purchase-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.add-purchase-modal__header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.add-purchase-modal__close {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--ink-soft);
+  font-size: 20px;
+  background: rgba(16, 36, 26, 0.06);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.add-purchase-modal__field {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.add-purchase-modal__amount-row {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.add-purchase-modal__amount-row input {
+  width: 100%;
+  padding: 14px 40px 14px 14px;
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
+}
+
+.add-purchase-modal__amount-row input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: -1px;
+}
+
+.add-purchase-modal__currency {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  color: var(--ink-faint);
+  font-size: 18px;
+  transform: translateY(-50%);
+}
+
+.add-purchase-modal__owners {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-purchase-modal__owner {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.add-purchase-modal__owner small {
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+.add-purchase-modal__owner--active {
+  background: var(--green-soft);
+  border-color: var(--green);
+}
+
+.add-purchase-modal__owner--active small {
+  color: var(--green-deep);
+}
+
+.add-purchase-modal__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-purchase-modal__category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px;
+  color: var(--ink);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.add-purchase-modal__category--active {
+  color: var(--green-deep);
+  background: var(--green-soft);
+  border-color: var(--green);
+}
+
+.add-purchase-modal__hint {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.add-purchase-modal__error {
+  margin: 0 0 12px;
+  color: var(--coral);
+  font-size: 13px;
+}
+
+.add-purchase-modal__submit {
+  width: 100%;
+  padding: 14px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 650;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 22px -10px rgba(11, 92, 34, 0.6);
+  transition: box-shadow 160ms ease;
+}
+
+.add-purchase-modal__submit:disabled {
+  background: var(--ink-faint);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.add-purchase-modal__submit:not(:disabled):hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 12px 26px -10px rgba(11, 92, 34, 0.7);
+}

@@ -134,6 +134,7 @@ class GroupDTO(BaseModel):
     ops_count: int
     description: str
     included: bool
+    total_amount: float = 0.0
     operations: list[str] = []
 
 

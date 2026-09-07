@@ -1,0 +1,69 @@
+.spending-chart {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.spending-chart__donut {
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+}
+
+.spending-chart__track {
+  fill: none;
+  stroke: var(--glass-line);
+  stroke-width: 16;
+}
+
+.spending-chart__legend {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.spending-chart__legend-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.spending-chart__dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.spending-chart__legend-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.spending-chart__legend-value {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .spending-chart {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .spending-chart__donut {
+    align-self: center;
+  }
+}

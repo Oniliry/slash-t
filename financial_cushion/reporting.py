@@ -3,7 +3,10 @@
 Формат (категории строго по убыванию суммы):
 
     Ваша финансовая подушка на следующий месяц: х рублей
-    -- [Категория] - х рублей (Количество операций: х) — описание
+    -- [Категория] - х рублей (среднее в месяц)
+       - Количество операций: х
+       - Всего потрачено: х рублей
+       • операция — сумма
     ...
 
     Внимание! Обнаружены регулярные переводы, которые могут быть
@@ -24,11 +27,15 @@ def _fmt_money(value: float) -> str:
 
 
 def _format_group(group: GroupResult, with_operations: bool = True) -> List[str]:
-    """Строка категории + краткий список её операций."""
+    """Категория по шаблону: среднее в месяц, операций, всего потрачено."""
     lines = [
         f"-- {group.name} - {_fmt_money(group.monthly_amount)} рублей "
-        f"(Количество операций: {group.ops_count}) — {group.description}"
+        f"(среднее в месяц)",
+        f"   - Количество операций: {group.ops_count}",
+        f"   - Всего потрачено: {_fmt_money(group.total_amount)} рублей",
     ]
+    if group.description:
+        lines[-1] += f" ({group.description})"
     if with_operations:
         lines += [f"   • {op}" for op in group.operations]
     return lines
@@ -66,7 +73,12 @@ def _format_resolved_note(result: CushionResult) -> List[str]:
         lines.append("Регулярные переводы, включённые в подушку по вашему решению:")
         for cand in confirmed:
             name = cand.label or cand.counterparty
-            lines.append(f"- {name} — {_fmt_money(cand.amount)} рублей/мес")
+            monthly = (
+                cand.monthly_amount
+                if cand.monthly_amount is not None
+                else cand.amount
+            )
+            lines.append(f"- {name} — {_fmt_money(monthly)} рублей/мес")
     if declined:
         lines.append("Регулярные переводы, исключённые из подушки по вашему решению:")
         for cand in declined:
@@ -81,7 +93,7 @@ def build_report(
     """Строит текстовый отчёт по результату расчёта.
 
     Args:
-        result: результат calculate_cushion.
+        result: результат calculate_cushion / recalculate.
         pending_only: True — показать только итог и блок уточнений
             (используется на первом шаге интерактивного сценария).
     """

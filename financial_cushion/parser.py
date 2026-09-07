@@ -9,7 +9,8 @@
     описание может переноситься на следующую строку.
 
 Возвращает список операций: дата, категория, сумма (положительная),
-признак дохода/расхода, описание, контрагент/мерчант.
+признак дохода/расхода, описание, контрагент/мерчант, а также
+метаданные документа (дата формирования, период выписки).
 """
 from __future__ import annotations
 
@@ -17,7 +18,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import pdfplumber
 
@@ -123,7 +124,7 @@ def _iter_lines(source: Union[str, bytes, Path]) -> Iterable[str]:
 
 def parse_statement_detailed(
     source: Union[str, bytes, Path],
-) -> tuple[List[Operation], StatementMeta]:
+) -> Tuple[List[Operation], StatementMeta]:
     """Разбирает PDF-выписку Сбербанка в список операций + метаданные.
 
     Args:

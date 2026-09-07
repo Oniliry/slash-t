@@ -1,35 +1,3 @@
-.page {
-  max-width: 1080px;
-  color: #17202a;
-}
-.page__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 28px;
-}
-.page__eyebrow {
-  margin: 0 0 8px;
-  color: #d97757;
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.page h1 {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 42px);
-  letter-spacing: -0.03em;
-}
-.page__lead {
-  max-width: 560px;
-  margin: 10px 0 0;
-  color: #66727e;
-  line-height: 1.55;
-}
-@media (max-width: 760px) {
-  .page__header {
-    display: block;
-  }
-}
+/* Общие стили .page/.page__header и т.д. вынесены в index.css,
+   чтобы не дублировать их в каждом разделе. Здесь — только то,
+   что специфично именно для этой страницы (пока ничего). */

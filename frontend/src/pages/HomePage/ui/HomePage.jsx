@@ -1,27 +1,9 @@
-import { useEffect, useState } from "react";
-
 import DashboardSummary from "../sections/DashboardSummary.jsx";
+import DebtsWidget from "../sections/DebtsWidget.jsx";
 import ExpensePreview from "../sections/ExpensePreview.jsx";
 import "./HomePage.css";
 
 function HomePage() {
-  const [serviceText, setServiceText] = useState("");
-
-  useEffect(() => {
-    let isCurrent = true;
-
-    fetch("http://localhost:8000/slash-t")
-      .then((response) => (response.ok ? response.text() : Promise.reject()))
-      .then((text) => {
-        if (isCurrent) setServiceText(text);
-      })
-      .catch(() => {});
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
-
   return (
     <section className="page">
       <header className="page__header">
@@ -32,9 +14,9 @@ function HomePage() {
             Общий обзор бюджета, трат и взаиморасчётов семьи.
           </p>
         </div>
-        <span className="page__status">{serviceText || "Семья Беловых"}</span>
       </header>
       <DashboardSummary />
+      <DebtsWidget />
       <ExpensePreview />
     </section>
   );

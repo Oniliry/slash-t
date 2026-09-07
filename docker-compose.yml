@@ -5,8 +5,6 @@ services:
       POSTGRES_DB: slash_t
       POSTGRES_USER: slash_t
       POSTGRES_PASSWORD: slash_t
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,6 +18,7 @@ services:
       context: ./backend
     environment:
       DATABASE_URL: postgresql://slash_t:slash_t@db:5432/slash_t
+      ENVIRONMENT: production
     ports:
       - "8000:8000"
     volumes:
@@ -31,6 +30,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    environment:
+      VITE_API_URL: /api
     ports:
       - "5173:5173"
     volumes:
@@ -39,5 +40,20 @@ services:
     depends_on:
       - backend
 
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
