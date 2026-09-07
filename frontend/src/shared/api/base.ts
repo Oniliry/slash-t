@@ -1,8 +1,35 @@
 import type { APIResponse } from './types'
-
 // Экспортируется для отдельных запросов вне request() — например,
 // multipart-загрузки файлов с FormData (Content-Type выставляет браузер).
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+
+// Токен сессии хранится в sessionStorage, а не в cookie. sessionStorage
+// изолирован для каждой вкладки браузера (в отличие от cookie, общей на весь
+// домен) — благодаря этому вход в аккаунт в одной вкладке не переключает
+// (и не сбрасывает) сессию в других открытых вкладках сайта.
+const TOKEN_STORAGE_KEY = 'slash-t:access_token'
+
+export function getStoredToken(): string | null {
+  try {
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY)
+  } catch {
+    // sessionStorage может быть недоступен (приватный режим, ограничения браузера) —
+    // тогда просто работаем без сохранённого токена.
+    return null
+  }
+}
+
+export function setStoredToken(token: string | null): void {
+  try {
+    if (token) {
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, token)
+    } else {
+      sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+    }
+  } catch {
+    // Ничего страшного — просто не сохранится между запросами в рамках вкладки.
+  }
+}
 
 export async function request<T>(
   path: string,

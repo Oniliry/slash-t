@@ -1,13 +1,20 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
-import { FamilyIcon, HomeIcon, ProfileIcon, ReceiptIcon } from '../TabBar/icons.jsx'
+import {
+  CushionIcon,
+  FamilyIcon,
+  HomeIcon,
+  ProfileIcon,
+  ReceiptIcon,
+} from '../TabBar/icons.jsx'
 
 const navigationItems = [
-  { to: '/', label: 'Главная', end: true },
-  { to: '/expenses', label: 'Расходы' },
-  { to: '/family', label: 'Семья' },
-  { to: '/profile', label: 'Профиль' },
+  { to: '/', label: 'Главная', end: true, Icon: HomeIcon },
+  { to: '/expenses', label: 'Расходы', Icon: ReceiptIcon },
+  { to: '/financial-cushion', label: 'ФинПодушка', Icon: CushionIcon },
+  { to: '/family', label: 'Семья', Icon: FamilyIcon },
+  { to: '/profile', label: 'Профиль', Icon: ProfileIcon },
 ]
 
 function Sidebar() {

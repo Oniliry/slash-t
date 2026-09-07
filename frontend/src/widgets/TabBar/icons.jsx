@@ -35,6 +35,16 @@ export function ReceiptIcon() {
   )
 }
 
+export function CushionIcon() {
+  return (
+    <svg {...commonProps}>
+      <path d="M4 17.5 8.5 13l3 3 4.5-6 4 4" />
+      <path d="M4 20h16" />
+      <path d="M5 4h14v16H5z" />
+    </svg>
+  )
+}
+
 export function FamilyIcon() {
   return (
     <svg {...commonProps}>
