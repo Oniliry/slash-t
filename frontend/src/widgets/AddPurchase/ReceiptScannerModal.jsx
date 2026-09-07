@@ -8,6 +8,17 @@ import "./AddPurchase.css";
 const HTML5_QRCODE_SRC = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
 const READER_ELEMENT_ID = "receipt-qr-reader";
 
+const SCAN_CONFIG = {
+  fps: 10,
+  qrbox: { width: 260, height: 260 },
+  aspectRatio: 1,
+  // Просим повыше разрешение — так мелкий QR-код на чеке проще поймать в фокус.
+  videoConstraints: {
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+  },
+};
+
 // Пытается понять, что именно пошло не так с камерой, и вернуть понятную
 // пользователю причину — вместо одной общей фразы на все случаи.
 function describeCameraError(err) {
@@ -41,29 +52,22 @@ function describeCameraError(err) {
   return "Не удалось включить камеру. Проверьте разрешение на доступ к камере в браузере и нажмите «Повторить».";
 }
 
-// Выбирает id камеры через Html5Qrcode.getCameras() (это же вызывает системный
-// запрос разрешения). Используется только как запасной путь, если основной
-// способ (facingMode: exact "environment", ниже) не сработал: активно избегаем
-// камеры с подписью "фронтальная", а не просто берём последнюю в списке.
-async function pickCameraId(Html5Qrcode) {
-  const cameras = await Html5Qrcode.getCameras();
-  if (!cameras || cameras.length === 0) {
-    throw new Error("no-camera");
-  }
-  if (cameras.length === 1) {
-    return cameras[0].id;
-  }
+// Выбирает индекс камеры в списке getCameras() для первого запуска.
+// Работаем по deviceId, а не facingMode: часть браузеров (и сама библиотека
+// html5-qrcode) на некоторых устройствах игнорирует facingMode и всё равно
+// подключает первую камеру в системном списке — deviceId такой неоднозначности не имеет.
+function pickInitialCameraIndex(cameras) {
+  const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн/i.test(camera.label ?? ""));
+  if (backIndex !== -1) return backIndex;
 
-  const back = cameras.find((camera) => /back|rear|environment|задн/i.test(camera.label ?? ""));
-  if (back) return back.id;
-
-  const isFront = (camera) => /front|user|selfie|передн/i.test(camera.label ?? "");
-  const nonFront = cameras.filter((camera) => !isFront(camera));
-  if (nonFront.length > 0) {
-    return nonFront[nonFront.length - 1].id;
+  const frontIndex = cameras.findIndex((camera) => /front|user|selfie|передн/i.test(camera.label ?? ""));
+  if (frontIndex !== -1 && cameras.length > 1) {
+    for (let i = cameras.length - 1; i >= 0; i -= 1) {
+      if (i !== frontIndex) return i;
+    }
   }
 
-  return cameras[cameras.length - 1].id;
+  return cameras.length - 1;
 }
 
 // Полноэкранный сканер QR-кода чека для мобильной версии. Парсинг содержимого
@@ -71,123 +75,122 @@ async function pickCameraId(Html5Qrcode) {
 // только считываем сырой текст из QR-кода и отдаём его наружу — без запросов на сервер.
 function ReceiptScannerModal({ onDecoded, onManualEntry }) {
   const scannerRef = useRef(null);
+  const camerasRef = useRef([]);
   const isFinishingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   const [status, setStatus] = useState("loading"); // 'loading' | 'scanning' | 'error'
   const [error, setError] = useState("");
   const [retryToken, setRetryToken] = useState(0);
+  const [cameraIndex, setCameraIndex] = useState(0);
+  const [cameraCount, setCameraCount] = useState(0);
+
+  async function stopScanner() {
+    const scanner = scannerRef.current;
+    scannerRef.current = null;
+    if (!scanner) return;
+
+    try {
+      await scanner.stop();
+    } catch {
+      // Сканер мог быть уже остановлен или не успел стартовать — не ошибка.
+    }
+    try {
+      await scanner.clear();
+    } catch {
+      // Аналогично — очищать нечего.
+    }
+  }
+
+  function handleDecoded(decodedText) {
+    if (isFinishingRef.current) return;
+    isFinishingRef.current = true;
+
+    stopScanner().finally(() => {
+      if (isMountedRef.current) onDecoded(decodedText);
+    });
+  }
+
+  function handleScanFailure() {
+    // Кадр без распознанного QR-кода — обычное дело во время наведения камеры.
+  }
 
   useEffect(() => {
-    let isCurrent = true;
+    isMountedRef.current = true;
     isFinishingRef.current = false;
 
-    async function stopScanner() {
-      const scanner = scannerRef.current;
-      scannerRef.current = null;
-      if (!scanner) return;
-
-      try {
-        await scanner.stop();
-      } catch {
-        // Сканер мог быть уже остановлен или не успел стартовать — не ошибка.
-      }
-      try {
-        await scanner.clear();
-      } catch {
-        // Аналогично — очищать нечего.
-      }
-    }
-
-    async function start() {
+    async function init() {
       setStatus("loading");
       setError("");
 
       try {
         await loadScriptOnce(HTML5_QRCODE_SRC);
-        if (!isCurrent) return;
+        if (!isMountedRef.current) return;
 
         const { Html5Qrcode } = window;
         const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
         scannerRef.current = scanner;
 
-        const scanConfig = {
-          fps: 10,
-          qrbox: { width: 260, height: 260 },
-          aspectRatio: 1,
-          // Просим повыше разрешение — так мелкий QR-код на чеке проще
-          // поймать в фокус.
-          videoConstraints: {
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-        };
-        const onSuccess = (decodedText) => {
-          if (isFinishingRef.current) return;
-          isFinishingRef.current = true;
-
-          stopScanner().finally(() => {
-            if (isCurrent) onDecoded(decodedText);
-          });
-        };
-        const onFailure = () => {
-          // Кадр без распознанного QR-кода — обычное дело во время наведения камеры.
-        };
-
-        try {
-          // Основной путь: жёстко требуем заднюю камеру через facingMode.
-          // "exact" не даёт браузеру самому выбрать фронталку, если она
-          // почему-то стоит первой в списке устройств.
-          await scanner.start(
-            { facingMode: { exact: "environment" } },
-            scanConfig,
-            onSuccess,
-            onFailure,
-          );
-        } catch {
-          if (!isCurrent) return;
-          // Устройство не поддержало exact-ограничение — ищем заднюю камеру
-          // по списку устройств и подписи (id вместо facingMode).
-          const cameraId = await pickCameraId(Html5Qrcode);
-          if (!isCurrent) return;
-          await scanner.start(cameraId, scanConfig, onSuccess, onFailure);
+        const cameras = await Html5Qrcode.getCameras();
+        if (!cameras || cameras.length === 0) {
+          throw new Error("no-camera");
         }
+        camerasRef.current = cameras;
+        if (!isMountedRef.current) return;
+        setCameraCount(cameras.length);
 
-        if (!isCurrent) {
+        const initialIndex = pickInitialCameraIndex(cameras);
+        setCameraIndex(initialIndex);
+
+        await scanner.start(cameras[initialIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
+
+        if (!isMountedRef.current) {
           stopScanner();
           return;
         }
 
         setStatus("scanning");
       } catch (err) {
-        if (!isCurrent) return;
+        if (!isMountedRef.current) return;
         setError(describeCameraError(err));
         setStatus("error");
       }
     }
 
-    start();
+    init();
 
     return () => {
-      isCurrent = false;
+      isMountedRef.current = false;
       stopScanner();
     };
-  }, [onDecoded, retryToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retryToken]);
+
+  async function handleSwitchCamera() {
+    const cameras = camerasRef.current;
+    const scanner = scannerRef.current;
+    if (!scanner || cameras.length < 2) return;
+
+    const nextIndex = (cameraIndex + 1) % cameras.length;
+
+    try {
+      await scanner.stop();
+    } catch {
+      // Не критично — всё равно пробуем запустить следующую камеру ниже.
+    }
+
+    try {
+      await scanner.start(cameras[nextIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
+      setCameraIndex(nextIndex);
+      setStatus("scanning");
+    } catch (err) {
+      setError(describeCameraError(err));
+      setStatus("error");
+    }
+  }
 
   async function handleManualEntry() {
-    const scanner = scannerRef.current;
-    scannerRef.current = null;
-    if (scanner) {
-      try {
-        await scanner.stop();
-      } catch {
-        // Не критично — состояние всё равно сбрасывается ниже.
-      }
-      try {
-        await scanner.clear();
-      } catch {
-        // Аналогично.
-      }
-    }
+    await stopScanner();
     onManualEntry();
   }
 
@@ -203,6 +206,17 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         <div className="receipt-scanner__frame" />
         <p className="receipt-scanner__hint">Наведите камеру на QR-код чека</p>
       </div>
+
+      {status === "scanning" && cameraCount > 1 && (
+        <button
+          className="receipt-scanner__switch"
+          type="button"
+          onClick={handleSwitchCamera}
+          aria-label="Сменить камеру"
+        >
+          ⟳ Сменить камеру
+        </button>
+      )}
 
       {status === "loading" && (
         <div className="receipt-scanner__status">Включаем камеру...</div>
