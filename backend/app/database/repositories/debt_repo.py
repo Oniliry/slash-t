@@ -156,6 +156,24 @@ class DebtRepository:
             (debt_ids,),
         )
 
+    async def list_expense_debts(self, expense_id: int) -> List[Debt]:
+        rows = await self.db.fetch(
+            """
+            SELECT id, expense_id, family_id, debtor_id, creditor_id, amount,
+                   status, created_at, confirmed_at
+            FROM debts
+            WHERE expense_id = $1
+            """,
+            (expense_id,),
+        )
+        return [Debt.model_validate(dict(row)) for row in rows]
+
+    async def delete_pending_for_expense(self, expense_id: int) -> None:
+        await self.db.execute(
+            "DELETE FROM debts WHERE expense_id = $1 AND status = 'pending'",
+            (expense_id,),
+        )
+
     async def confirm_debt(self, debt_id: int) -> Optional[Debt]:
         """
         Помечает долг как погашенный (подтверждено получателем перевода).

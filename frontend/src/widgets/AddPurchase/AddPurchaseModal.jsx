@@ -3,12 +3,12 @@ import { createPortal } from 'react-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import { getMyFamily } from '../../shared/api/family.ts'
-import { createExpense } from '../../shared/api/expenses.ts'
+import { createExpense, updateExpense } from '../../shared/api/expenses.ts'
 import { EXPENSE_CATEGORIES } from '../../shared/lib/expenseCategories.js'
 
 import './AddPurchase.css'
 
-function AddPurchaseModal({ onClose, onCreated }) {
+function AddPurchaseModal({ onClose, onCreated, expense = null }) {
   const { user } = useAuth()
 
   const [members, setMembers] = useState([])
@@ -18,6 +18,7 @@ function AddPurchaseModal({ onClose, onCreated }) {
   const [category, setCategory] = useState('groceries')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
+  const isEditing = Boolean(expense)
 
   useEffect(() => {
     let isCurrent = true
@@ -41,6 +42,13 @@ function AddPurchaseModal({ onClose, onCreated }) {
     }
   }, [onClose])
 
+  useEffect(() => {
+    if (!expense) return
+    setAmount(String(expense.amount))
+    setCategory(expense.category)
+    setOwnerChoice(expense.owner_type === 'shared' ? 'shared' : String(expense.owner_id ?? user?.id))
+  }, [expense, user?.id])
+
   const parsedAmount = Number(amount.replace(',', '.'))
   const canSave = parsedAmount > 0 && !isSaving
 
@@ -61,11 +69,13 @@ function AddPurchaseModal({ onClose, onCreated }) {
             category,
           }
 
-    const response = await createExpense(payload)
+    const response = isEditing
+      ? await updateExpense(expense.id, payload)
+      : await createExpense(payload)
     setIsSaving(false)
 
     if (response.error) {
-      setError(response.message ?? 'Не удалось добавить покупку.')
+      setError(response.message ?? (isEditing ? 'Не удалось изменить покупку.' : 'Не удалось добавить покупку.'))
       return
     }
 
@@ -79,11 +89,11 @@ function AddPurchaseModal({ onClose, onCreated }) {
         className="add-purchase-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Добавить покупку"
+        aria-label={isEditing ? 'Изменить покупку' : 'Добавить покупку'}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="add-purchase-modal__header">
-          <h2>Добавить покупку</h2>
+          <h2>{isEditing ? 'Изменить покупку' : 'Добавить покупку'}</h2>
           <button
             className="add-purchase-modal__close"
             type="button"
@@ -165,9 +175,16 @@ function AddPurchaseModal({ onClose, onCreated }) {
 
           {error && <p className="add-purchase-modal__error">{error}</p>}
 
-          <button className="add-purchase-modal__submit" type="submit" disabled={!canSave}>
-            {isSaving ? 'Добавляем...' : 'Добавить покупку'}
-          </button>
+          <div className={isEditing ? 'add-purchase-modal__actions' : undefined}>
+            {isEditing && (
+              <button className="add-purchase-modal__cancel" type="button" onClick={onClose}>
+                Отменить
+              </button>
+            )}
+            <button className="add-purchase-modal__submit" type="submit" disabled={!canSave}>
+              {isSaving ? 'Сохраняем...' : isEditing ? 'Сохранить' : 'Добавить покупку'}
+            </button>
+          </div>
         </form>
       </div>
     </div>,

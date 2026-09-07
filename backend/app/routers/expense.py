@@ -2,7 +2,7 @@ from dependencies.expense import ExpenseServiceDep
 from dependencies.family import CurrentUserDep
 from fastapi import APIRouter
 
-from schemas.expense import CreateExpenseRequest
+from schemas.expense import CreateExpenseRequest, UpdateExpenseRequest
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 
@@ -41,6 +41,17 @@ async def list_expenses(
     :return: Список покупок, отсортированный от новых к старым, или ошибку.
     """
     return await service.list_expenses(user, limit=limit)
+
+
+@router.put("/{expense_id}")
+async def update_expense(
+    expense_id: int,
+    data: UpdateExpenseRequest,
+    user: CurrentUserDep,
+    service: ExpenseServiceDep,
+):
+    """Изменяет покупку и пересчитывает связанные непогашенные долги."""
+    return await service.update_expense(user, expense_id, data)
 
 
 __all__ = [

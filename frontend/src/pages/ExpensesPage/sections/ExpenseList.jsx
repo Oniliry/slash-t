@@ -6,7 +6,7 @@ import {
 } from "../../../shared/lib/expenseFormat.js";
 import "./ExpenseList.css";
 
-function ExpenseList({ expenses, isLoading, error }) {
+function ExpenseList({ expenses, isLoading, error, onEdit }) {
   return (
     <article className="card">
       <div className="section-heading">
@@ -40,7 +40,20 @@ function ExpenseList({ expenses, isLoading, error }) {
                     {formatExpenseOwner(expense)}
                   </small>
                 </span>
-                <strong>{formatExpenseAmount(expense.amount)}</strong>
+                <span className="list__amount">
+                  <strong>{formatExpenseAmount(expense.amount)}</strong>
+                  {expense.can_edit && (
+                    <button
+                      className="list__edit"
+                      type="button"
+                      onClick={() => onEdit(expense)}
+                      aria-label={`Изменить покупку на ${formatExpenseAmount(expense.amount)}`}
+                      title="Изменить покупку"
+                    >
+                      ✎
+                    </button>
+                  )}
+                </span>
               </div>
             );
           })}

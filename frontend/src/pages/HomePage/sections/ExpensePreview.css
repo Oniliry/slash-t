@@ -1,3 +1,29 @@
 /* Общие .card/.section-heading/.list вынесены в index.css.
    У этого раздела нет уникальных стилей — но файл оставлен как
    точка расширения (например, отдельного цвета для суммы). */
+
+.list__amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.list__edit {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 19px;
+  line-height: 1;
+  background: rgba(16, 36, 26, 0.06);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.list__edit:hover {
+  color: var(--green-deep);
+  background: var(--green-soft);
+}

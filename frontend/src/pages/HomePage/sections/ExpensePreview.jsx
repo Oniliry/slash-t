@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import AddPurchaseModal from "../../../widgets/AddPurchase/AddPurchaseModal.jsx";
 
 import { getExpenses } from "../../../shared/api/expenses.ts";
 import { getExpenseCategory } from "../../../shared/lib/expenseCategories.js";
@@ -21,6 +22,7 @@ function ExpensePreview() {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingExpense, setEditingExpense] = useState(null);
 
   const loadExpenses = useCallback(async () => {
     const response = await getExpenses();
@@ -78,11 +80,34 @@ function ExpensePreview() {
                     {formatExpenseOwner(expense)}
                   </small>
                 </span>
-                <strong>{formatExpenseAmount(expense.amount)}</strong>
+                <span className="list__amount">
+                  <strong>{formatExpenseAmount(expense.amount)}</strong>
+                  {expense.can_edit && (
+                    <button
+                      className="list__edit"
+                      type="button"
+                      onClick={() => setEditingExpense(expense)}
+                      aria-label={`Изменить покупку на ${formatExpenseAmount(expense.amount)}`}
+                      title="Изменить покупку"
+                    >
+                      ✎
+                    </button>
+                  )}
+                </span>
               </div>
             );
           })}
         </div>
+      )}
+      {editingExpense && (
+        <AddPurchaseModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onCreated={() => {
+            setEditingExpense(null);
+            loadExpenses();
+          }}
+        />
       )}
     </article>
   );
