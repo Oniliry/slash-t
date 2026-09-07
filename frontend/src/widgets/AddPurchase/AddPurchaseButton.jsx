@@ -1,11 +1,17 @@
 import { useState } from 'react'
 
 import AddPurchaseModal from './AddPurchaseModal.jsx'
+import ReceiptScanner from './ReceiptScanner.jsx'
 
 import './AddPurchase.css'
 
+// Брейкпоинт совпадает с CSS-брейкпоинтом таббара (MainLayout.css):
+// на мобильном «+» открывает сканер чека, на десктопе — ручную форму.
+const MOBILE_QUERY = '(max-width: 700px)'
+
 function AddPurchaseButton({ variant = 'navbar' }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   function handleCreated() {
     // Другие виджеты (например, долги на главной) слушают это событие,
@@ -13,37 +19,41 @@ function AddPurchaseButton({ variant = 'navbar' }) {
     window.dispatchEvent(new CustomEvent('slash-t:expense-created'))
   }
 
-  if (variant === 'tabbar') {
-    return (
-      <>
-        <button
-          className="tab-bar__add"
-          type="button"
-          onClick={() => setIsOpen(true)}
-          aria-label="Добавить покупку"
-        >
-          <span className="tab-bar__add-icon">+</span>
-        </button>
-        {isOpen && (
-          <AddPurchaseModal onClose={() => setIsOpen(false)} onCreated={handleCreated} />
-        )}
-      </>
-    )
+  function handleClick() {
+    if (window.matchMedia(MOBILE_QUERY).matches) {
+      setIsScannerOpen(true)
+    } else {
+      setIsOpen(true)
+    }
   }
+
+  const className =
+    variant === 'tabbar' ? 'tab-bar__add' : 'navbar__add'
 
   return (
     <>
       <button
-        className="navbar__add"
+        className={className}
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={handleClick}
         aria-label="Добавить покупку"
         title="Добавить покупку"
       >
-        +
+        {variant === 'tabbar' ? <span className="tab-bar__add-icon">+</span> : '+'}
       </button>
+
       {isOpen && (
         <AddPurchaseModal onClose={() => setIsOpen(false)} onCreated={handleCreated} />
+      )}
+
+      {isScannerOpen && (
+        <ReceiptScanner
+          onClose={() => setIsScannerOpen(false)}
+          onManual={() => {
+            setIsScannerOpen(false)
+            setIsOpen(true)
+          }}
+        />
       )}
     </>
   )

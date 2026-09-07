@@ -13,6 +13,9 @@ JWT_SECRET: str = getenv("JWT_SECRET", "local-development-secret-change-me")
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_MINUTES: int = int(getenv("JWT_EXPIRE_MINUTES", "10080"))
 
+# Ключ API code-qr.ru (расшифровка кассовых чеков) — передаётся в заголовке key.
+RECEIPT_API_KEY: str = getenv("RECEIPT_API_KEY", "")
+
 
 LOGGING_DIR: str = "logging"
 
