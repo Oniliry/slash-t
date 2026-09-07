@@ -105,7 +105,10 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className="add-purchase-modal__field" htmlFor="purchase-amount">
+          <label
+            className="add-purchase-modal__field add-purchase-modal__field--amount"
+            htmlFor="purchase-amount"
+          >
             Сумма покупки
           </label>
           <div className="add-purchase-modal__amount-row">
@@ -166,9 +169,12 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
                   category === item.id ? ' add-purchase-modal__category--active' : ''
                 }`}
                 onClick={() => setCategory(item.id)}
+                aria-pressed={category === item.id}
               >
-                <span aria-hidden="true">{item.icon}</span>
-                {item.label}
+                <span className="add-purchase-modal__category-icon" aria-hidden="true">
+                  {item.icon}
+                </span>
+                <span className="add-purchase-modal__category-label">{item.label}</span>
               </button>
             ))}
           </div>

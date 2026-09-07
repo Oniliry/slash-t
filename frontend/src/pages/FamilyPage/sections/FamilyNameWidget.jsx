@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { renameFamily } from '../../../shared/api/family.ts'
-import { EditIcon, LogoutIcon } from '../../../widgets/TabBar/icons.jsx'
+import { EditIcon, LogoutIcon } from '../../../shared/ui/icons.jsx'
 
 import './FamilyWidgets.css'
 

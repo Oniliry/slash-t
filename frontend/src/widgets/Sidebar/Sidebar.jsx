@@ -7,7 +7,9 @@ import {
   HomeIcon,
   ProfileIcon,
   ReceiptIcon,
-} from '../TabBar/icons.jsx'
+} from '../../shared/ui/icons.jsx'
+
+import './Sidebar.css'
 
 const navigationItems = [
   { to: '/', label: 'Главная', end: true, Icon: HomeIcon },
