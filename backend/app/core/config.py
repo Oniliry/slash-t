@@ -14,6 +14,7 @@ JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_MINUTES: int = int(getenv("JWT_EXPIRE_MINUTES", "10080"))
 JWT_COOKIE_NAME: str = "slash_t_access_token"
 JWT_COOKIE_SECURE: bool = getenv("ENVIRONMENT", "development") == "production"
+CODE_QR_API_KEY: str = getenv("CODE_QR_API_KEY", "")
 
 
 LOGGING_DIR: str = "logging"
@@ -25,4 +26,5 @@ __all__ = [
     "JWT_EXPIRE_MINUTES",
     "JWT_COOKIE_NAME",
     "JWT_COOKIE_SECURE",
+    "CODE_QR_API_KEY",
 ]
