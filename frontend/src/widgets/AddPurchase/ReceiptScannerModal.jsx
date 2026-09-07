@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
 import { loadScriptOnce } from "../../shared/lib/loadScript.js";
 
@@ -8,16 +7,13 @@ import "./AddPurchase.css";
 const HTML5_QRCODE_SRC = "https://jsdelivr.net";
 const READER_ELEMENT_ID = "receipt-qr-reader";
 
-// Упрощаем конфиг: убираем жесткие рамки разрешения ideal: 1920, 
-// из-за которых Safari на iOS часто молча зависает или падает.
+// Чистый, облегченный конфиг без ограничений, ломающих Safari
 const SCAN_CONFIG = {
-  fps: 15,
+  fps: 10,
   qrbox: { width: 260, height: 260 },
   aspectRatio: 1
 };
 
-// Пытается понять, что именно пошло не так с камерой, и вернуть понятную
-// пользователю причину — вместо одной общей фразы на все случаи.
 function describeCameraError(err) {
   if (typeof window !== "undefined" && window.isSecureContext === false) {
     return "Камера доступна только по защищённому соединению (https). Откройте сайт по ссылке, начинающейся с https://.";
@@ -49,23 +45,18 @@ function describeCameraError(err) {
   return "Не удалось включить камеру. Проверьте разрешение на доступ к камере в браузере и нажмите «Повторить».";
 }
 
-// Надежный выбор индекса задней камеры.
 function pickInitialCameraIndex(cameras) {
-  // Ищем камеру, в названии которой есть признаки задней
   const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн|основн/i.test(camera.label ?? ""));
   if (backIndex !== -1) return backIndex;
 
-  // Если названий нет (браузер скрыл до старта), то на iOS/Android 
-  // в 99% случаев первая камера в списке (индекс 0) — это фронталка, 
-  // а ПОСЛЕДНЯЯ камера в списке — это основная задняя.
+  // На iOS до выдачи прав labels пустые. 
+  // Берем последнюю камеру в списке — это всегда основная задняя.
   if (cameras.length > 1) {
     return cameras.length - 1; 
   }
-
   return 0;
 }
 
-// Полноэкранный сканер QR-кода чека для мобильной версии.
 function ReceiptScannerModal({ onDecoded, onManualEntry }) {
   const scannerRef = useRef(null);
   const camerasRef = useRef([]);
@@ -86,12 +77,12 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     try {
       await scanner.stop();
     } catch {
-      // Сканер мог быть уже остановлен или не успел стартовать — не ошибка.
+      // Игнорируем
     }
     try {
       await scanner.clear();
     } catch {
-      // Аналогично — очищать нечего.
+      // Игнорируем
     }
   }
 
@@ -105,12 +96,13 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
   }
 
   function handleScanFailure() {
-    // Кадр без распознанного QR-кода — обычное дело во время наведения камеры.
+    // Обычный пропуск кадра без QR-кода
   }
 
   useEffect(() => {
     isMountedRef.current = true;
     isFinishingRef.current = false;
+    let timeoutId = null;
 
     async function init() {
       setStatus("loading");
@@ -120,39 +112,50 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         await loadScriptOnce(HTML5_QRCODE_SRC);
         if (!isMountedRef.current) return;
 
-        const { Html5Qrcode } = window;
-        const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
-        scannerRef.current = scanner;
+        // Даем React 300мс полностью смонтировать div в DOM перед тем, как html5-qrcode начнет его искать
+        timeoutId = setTimeout(async () => {
+          try {
+            const element = document.getElementById(READER_ELEMENT_ID);
+            if (!element) {
+              throw new Error("DOM element not found yet");
+            }
 
-        // Сначала запрашиваем список камер
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-          throw new Error("no-camera");
-        }
-        camerasRef.current = cameras;
-        if (!isMountedRef.current) return;
-        setCameraCount(cameras.length);
+            const { Html5Qrcode } = window;
+            const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
+            scannerRef.current = scanner;
 
-        // Определяем индекс задней камеры по нашему умному алгоритму
-        const initialIndex = pickInitialCameraIndex(cameras);
-        setCameraIndex(initialIndex);
+            const cameras = await Html5Qrcode.getCameras();
+            if (!cameras || cameras.length === 0) {
+              throw new Error("no-camera");
+            }
+            camerasRef.current = cameras;
+            if (!isMountedRef.current) return;
+            setCameraCount(cameras.length);
 
-        // Запускаем по конкретному ID устройства (это самый стабильный вариант для iOS Safari)
-        await scanner.start(
-          cameras[initialIndex].id,
-          SCAN_CONFIG,
-          handleDecoded,
-          handleScanFailure
-        );
+            const initialIndex = pickInitialCameraIndex(cameras);
+            setCameraIndex(initialIndex);
 
-        if (!isMountedRef.current) {
-          stopScanner();
-          return;
-        }
+            await scanner.start(
+              cameras[initialIndex].id,
+              SCAN_CONFIG,
+              handleDecoded,
+              handleScanFailure
+            );
 
-        setStatus("scanning");
+            if (!isMountedRef.current) {
+              stopScanner();
+              return;
+            }
+
+            setStatus("scanning");
+          } catch (err) {
+            if (!isMountedRef.current) return;
+            setError(describeCameraError(err));
+            setStatus("error");
+          }
+        }, 300);
+
       } catch (err) {
-        console.error("Camera init error:", err);
         if (!isMountedRef.current) return;
         setError(describeCameraError(err));
         setStatus("error");
@@ -163,6 +166,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
 
     return () => {
       isMountedRef.current = false;
+      if (timeoutId) clearTimeout(timeoutId);
       stopScanner();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,7 +182,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     try {
       await scanner.stop();
     } catch {
-      // Не критично — всё равно пробуем запустить следующую камеру ниже.
+      // Игнорируем
     }
 
     try {
@@ -200,7 +204,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     setRetryToken((token) => token + 1);
   }
 
-  return createPortal(
+  return (
     <div className="receipt-scanner">
       <div id={READER_ELEMENT_ID} className="receipt-scanner__video" />
 
@@ -240,8 +244,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
       >
         Ввести вручную
       </button>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
