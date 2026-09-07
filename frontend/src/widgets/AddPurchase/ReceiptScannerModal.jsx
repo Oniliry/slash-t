@@ -5,15 +5,16 @@ import { loadScriptOnce } from "../../shared/lib/loadScript.js";
 
 import "./AddPurchase.css";
 
-const HTML5_QRCODE_SRC = "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+const HTML5_QRCODE_SRC = "https://jsdelivr.net";
 const READER_ELEMENT_ID = "receipt-qr-reader";
 
 const SCAN_CONFIG = {
   fps: 10,
   qrbox: { width: 260, height: 260 },
   aspectRatio: 1,
-  // Просим повыше разрешение — так мелкий QR-код на чеке проще поймать в фокус.
+  // Явно просимfacingMode на уровне медиа-потока библиотеки
   videoConstraints: {
+    facingMode: "environment",
     width: { ideal: 1920 },
     height: { ideal: 1080 },
   },
@@ -53,9 +54,6 @@ function describeCameraError(err) {
 }
 
 // Выбирает индекс камеры в списке getCameras() для первого запуска.
-// Работаем по deviceId, а не facingMode: часть браузеров (и сама библиотека
-// html5-qrcode) на некоторых устройствах игнорирует facingMode и всё равно
-// подключает первую камеру в системном списке — deviceId такой неоднозначности не имеет.
 function pickInitialCameraIndex(cameras) {
   const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн/i.test(camera.label ?? ""));
   if (backIndex !== -1) return backIndex;
@@ -67,12 +65,12 @@ function pickInitialCameraIndex(cameras) {
     }
   }
 
-  return cameras.length - 1;
+  // Если браузер скрыл названия (метки пустые), по умолчанию на Android/iOS 
+  // под нулевым индексом практически всегда идет основная задняя камера.
+  return 0;
 }
 
-// Полноэкранный сканер QR-кода чека для мобильной версии. Парсинг содержимого
-// (строка вида "t=2026...&s=...") backend пока не поддерживает, поэтому мы
-// только считываем сырой текст из QR-кода и отдаём его наружу — без запросов на сервер.
+// Полноэкранный сканер QR-кода чека для мобильной версии.
 function ReceiptScannerModal({ onDecoded, onManualEntry }) {
   const scannerRef = useRef(null);
   const camerasRef = useRef([]);
@@ -142,7 +140,14 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         const initialIndex = pickInitialCameraIndex(cameras);
         setCameraIndex(initialIndex);
 
-        await scanner.start(cameras[initialIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
+        // Включаем принудительноfacingMode: "environment" для старта,
+        // вместо слепого перебора по cameras[initialIndex].id
+        await scanner.start(
+          { facingMode: "environment" },
+          SCAN_CONFIG,
+          handleDecoded,
+          handleScanFailure
+        );
 
         if (!isMountedRef.current) {
           stopScanner();
@@ -176,10 +181,11 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     try {
       await scanner.stop();
     } catch {
-      // Не критично — всё равно пробуем запустить следующую камеру ниже.
+      // Не критично — пробуем запустить следующую камеру.
     }
 
     try {
+      // При ручном переключении используем конкретный ID из системного пула
       await scanner.start(cameras[nextIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
       setCameraIndex(nextIndex);
       setStatus("scanning");
