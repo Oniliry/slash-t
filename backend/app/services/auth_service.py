@@ -5,15 +5,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import jwt
-from fastapi import Response
 
-from core.config import (
-    JWT_ALGORITHM,
-    JWT_COOKIE_NAME,
-    JWT_COOKIE_SECURE,
-    JWT_EXPIRE_MINUTES,
-    JWT_SECRET,
-)
+from core.config import JWT_ALGORITHM, JWT_EXPIRE_MINUTES, JWT_SECRET
 from database.repositories.user_repo import UserRepository
 from schemas.auth import AuthResponse, UserLoginRequest, UserRegisterRequest, UserResponse
 from schemas.base import APIResponse
@@ -89,33 +82,16 @@ class AuthService:
         }
         return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    @staticmethod
-    def set_auth_cookie(response: Response, token: str) -> None:
-        """Сохраняет JWT в защищённой HttpOnly cookie."""
-        response.set_cookie(
-            key=JWT_COOKIE_NAME,
-            value=token,
-            max_age=JWT_EXPIRE_MINUTES * 60,
-            httponly=True,
-            secure=JWT_COOKIE_SECURE,
-            samesite="lax",
-            path="/",
-        )
-
-    @staticmethod
-    def clear_auth_cookie(response: Response) -> None:
-        """Удаляет cookie текущей JWT-сессии."""
-        response.delete_cookie(key=JWT_COOKIE_NAME, path="/")
-
-    def logout_user(self, response: Response) -> APIResponse[None]:
+    def logout_user(self) -> APIResponse[None]:
         """
         Завершает авторизацию пользователя.
 
-        JWT хранится в cookie, поэтому выход выполняется удалением cookie.
+        Токен — стейтлес JWT без серверного хранения сессий, поэтому на
+        бэкенде отзывать нечего: фронтенд просто удаляет токен из
+        sessionStorage своей вкладки.
 
         :return: Подтверждение завершения сессии.
         """
-        self.clear_auth_cookie(response)
         return APIResponse.success(message="Выход выполнен успешно.")
 
     @staticmethod
@@ -140,7 +116,6 @@ class AuthService:
     async def register_user(
         self,
         data: UserRegisterRequest,
-        response: Response,
     ) -> APIResponse[AuthResponse]:
         """
         Регистрирует пользователя в системе.
@@ -161,20 +136,17 @@ class AuthService:
             password_hash=self.hash_password(data.password),
         )
 
-        auth_response = APIResponse.success(
+        return APIResponse.success(
             data=AuthResponse(
                 user=UserResponse.model_validate(user),
                 access_token=self.create_access_token(user.id),
             ),
             message="Пользователь успешно зарегистрирован.",
         )
-        self.set_auth_cookie(response, auth_response.data.access_token)
-        return auth_response
 
     async def login_user(
         self,
         data: UserLoginRequest,
-        response: Response,
     ) -> APIResponse[AuthResponse]:
         """
         Проверяет логин и пароль пользователя.
@@ -193,15 +165,13 @@ class AuthService:
                 type="invalid_credentials",
             )
 
-        auth_response = APIResponse.success(
+        return APIResponse.success(
             data=AuthResponse(
                 user=UserResponse.model_validate(dict(user_row)),
                 access_token=self.create_access_token(int(user_row["id"])),
             ),
             message="Вход выполнен успешно.",
         )
-        self.set_auth_cookie(response, auth_response.data.access_token)
-        return auth_response
 
     async def get_current_user(self, token: Optional[str]) -> APIResponse[UserResponse]:
         """

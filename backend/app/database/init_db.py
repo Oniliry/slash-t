@@ -119,77 +119,12 @@ async def create_tables():
         """
     )
 
-    # Таблица cushion_operations хранит историю пополнений и списаний
-    # финансовой подушки семьи: сколько отложили, сколько потратили
-    # из резерва и на что.
-    await db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cushion_operations (
-            id SERIAL PRIMARY KEY,
-            family_id INTEGER NOT NULL REFERENCES families(id) ON DELETE CASCADE,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            kind VARCHAR(10) NOT NULL CHECK (kind IN ('topup', 'withdraw')),
-            amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
-            comment VARCHAR(200),
-            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-        )
-        """
-    )
-
-    # Таблица cushion_goals хранит цель накоплений семьи: целевая сумма
-    # и на сколько месяцев расходов она рассчитана (цель одна на семью).
-    await db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cushion_goals (
-            family_id INTEGER PRIMARY KEY REFERENCES families(id) ON DELETE CASCADE,
-            target_amount NUMERIC(14, 2) NOT NULL CHECK (target_amount > 0),
-            months INTEGER NOT NULL DEFAULT 6 CHECK (months BETWEEN 1 AND 60),
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-        )
-        """
-    )
-
-    # Таблица cushion_analysis хранит последний анализ PDF-выписки
-    # каждого участника семьи: у каждого члена семьи своя выписка,
-    # поэтому ключ — user_id. payload содержит полный JSON результата
-    # analyze_statement (месяцы, транзакции, кандидаты-переводы),
-    # cushion_total денормализован для рейтинга семьи.
-    await db.execute(
-        """
-        CREATE TABLE IF NOT EXISTS cushion_analysis (
-            user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-            family_id INTEGER NOT NULL REFERENCES families(id) ON DELETE CASCADE,
-            months_analyzed INTEGER NOT NULL DEFAULT 0,
-            cushion_total NUMERIC(14, 2) NOT NULL DEFAULT 0,
-            full_months JSONB NOT NULL DEFAULT '[]',
-            excluded_months JSONB NOT NULL DEFAULT '[]',
-            payload JSONB NOT NULL,
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-        )
-        """
-    )
-
 async def drop_tables():
     """
-    Удаляет таблицы пользователей, семей, покупок, долгов и подушки.
+    Удаляет таблицы пользователей, семей, покупок и долгов.
 
     Метод предназначен для служебных сценариев и очистки тестовой базы.
     """
-    await db.execute(
-        """
-        DROP TABLE IF EXISTS cushion_analysis CASCADE
-        """
-    )
-    await db.execute(
-        """
-        DROP TABLE IF EXISTS cushion_goals CASCADE
-        """
-    )
-    await db.execute(
-        """
-        DROP TABLE IF EXISTS cushion_operations CASCADE
-        """
-    )
     await db.execute(
         """
         DROP TABLE IF EXISTS debts CASCADE

@@ -1,8 +1,6 @@
 import DashboardSummary from "../sections/DashboardSummary.jsx";
-import CushionWidget from "../sections/CushionWidget.jsx";
 import DebtsWidget from "../sections/DebtsWidget.jsx";
 import ExpensePreview from "../sections/ExpensePreview.jsx";
-import Notifications from "../sections/Notifications.jsx";
 import "./HomePage.css";
 
 function HomePage() {
@@ -17,10 +15,8 @@ function HomePage() {
           </p>
         </div>
       </header>
-      <Notifications />
       <DashboardSummary />
       <DebtsWidget />
-      <CushionWidget />
       <ExpensePreview />
     </section>
   );

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 
 import { getExpenses } from "../../../shared/api/expenses.ts";
 import { getMyFamily } from "../../../shared/api/family.ts";
-import AddPurchaseModal from "../../../widgets/AddPurchase/AddPurchaseModal.jsx";
 import ExpenseSummary from "../sections/ExpenseSummary.jsx";
 import ExpenseList from "../sections/ExpenseList.jsx";
 import "./ExpensesPage.css";
@@ -12,7 +11,6 @@ function ExpensesPage() {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingExpense, setEditingExpense] = useState(null);
 
   const loadExpenses = useCallback(async () => {
     const response = await getExpenses();
@@ -56,22 +54,7 @@ function ExpensesPage() {
         </div>
       </header>
       <ExpenseSummary expenses={expenses} members={members} isLoading={isLoading} />
-      <ExpenseList
-        expenses={expenses}
-        isLoading={isLoading}
-        error={error}
-        onEdit={setEditingExpense}
-      />
-      {editingExpense && (
-        <AddPurchaseModal
-          expense={editingExpense}
-          onClose={() => setEditingExpense(null)}
-          onCreated={() => {
-            setEditingExpense(null);
-            loadExpenses();
-          }}
-        />
-      )}
+      <ExpenseList expenses={expenses} isLoading={isLoading} error={error} />
     </section>
   );
 }

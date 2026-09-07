@@ -12,7 +12,6 @@ import HomePage from '../../pages/HomePage/ui/HomePage.jsx'
 import ExpensesPage from '../../pages/ExpensesPage/ui/ExpensesPage.jsx'
 import FamilyPage from '../../pages/FamilyPage/ui/FamilyPage.jsx'
 import ProfilePage from '../../pages/ProfilePage/ui/ProfilePage.jsx'
-import FinancialCushionPage from '../../pages/FinancialCushionPage/ui/CushionPage.jsx'
 
 export function AppRouter() {
   return (
@@ -33,7 +32,6 @@ export function AppRouter() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/expenses" element={<ExpensesPage />} />
-            <Route path="/financial-cushion" element={<FinancialCushionPage />} />
             <Route path="/family" element={<FamilyPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

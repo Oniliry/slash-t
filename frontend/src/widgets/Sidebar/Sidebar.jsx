@@ -1,22 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
-import {
-  CushionIcon,
-  FamilyIcon,
-  HomeIcon,
-  ProfileIcon,
-  ReceiptIcon,
-} from '../../shared/ui/icons.jsx'
-
-import './Sidebar.css'
 
 const navigationItems = [
-  { to: '/', label: 'Главная', end: true, Icon: HomeIcon },
-  { to: '/expenses', label: 'Расходы', Icon: ReceiptIcon },
-  { to: '/financial-cushion', label: 'ФинПодушка', Icon: CushionIcon },
-  { to: '/family', label: 'Семья', Icon: FamilyIcon },
-  { to: '/profile', label: 'Профиль', Icon: ProfileIcon },
+  { to: '/', label: 'Главная', end: true },
+  { to: '/expenses', label: 'Расходы' },
+  { to: '/family', label: 'Семья' },
+  { to: '/profile', label: 'Профиль' },
 ]
 
 function Sidebar() {
@@ -32,15 +22,14 @@ function Sidebar() {
     <aside className="sidebar" aria-label="Основная навигация">
       <span className="sidebar__label">Навигация</span>
       <nav>
-        {navigationItems.map(({ to, label, end, Icon }) => (
+        {navigationItems.map((item) => (
           <NavLink
             className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}
-            end={end}
-            key={to}
-            to={to}
+            end={item.end}
+            key={item.to}
+            to={item.to}
           >
-            <Icon />
-            <span>{label}</span>
+            {item.label}
           </NavLink>
         ))}
       </nav>

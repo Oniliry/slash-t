@@ -55,14 +55,6 @@
   gap: 18px;
 }
 
-.dashboard-budget__debt--negative {
-  color: var(--coral);
-}
-
-.dashboard-budget__debt--positive {
-  color: var(--green-deep);
-}
-
 @media (max-width: 480px) {
   .dashboard-budget__body {
     gap: 16px;
