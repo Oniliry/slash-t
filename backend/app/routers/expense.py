@@ -3,8 +3,11 @@ from dependencies.family import CurrentUserDep
 from fastapi import APIRouter
 
 from schemas.expense import CreateExpenseRequest, UpdateExpenseRequest
+from schemas.receipt import ReceiptScanRequest
+from services.receipt_service import ReceiptService
 
 router = APIRouter(prefix="/expenses", tags=["expenses"])
+receipt_service = ReceiptService()
 
 
 @router.post("")
@@ -41,6 +44,21 @@ async def list_expenses(
     :return: Список покупок, отсортированный от новых к старым, или ошибку.
     """
     return await service.list_expenses(user, limit=limit)
+
+
+@router.post("/receipt/scan")
+async def scan_receipt(
+    data: ReceiptScanRequest,
+    user: CurrentUserDep,
+):
+    """Распознаёт QR-чек через code-qr.ru для авторизованного пользователя."""
+    if user.family_id is None:
+        return {
+            "error": True,
+            "message": "Сначала создайте семью или присоединитесь к ней по коду.",
+            "type": "family_required",
+        }
+    return await receipt_service.scan(data)
 
 
 @router.put("/{expense_id}")
