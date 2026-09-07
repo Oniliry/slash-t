@@ -62,9 +62,11 @@
 }
 
 .cushion-widget__icon {
+  display: block;
   width: 28px;
   height: 28px;
   flex: 0 0 28px;
+  box-sizing: border-box;
   padding: 5px;
   color: var(--green-deep);
   background: var(--green-soft);
@@ -89,17 +91,22 @@
   color: #ffffff;
   font-size: 13px;
   font-weight: 700;
-  background: linear-gradient(180deg, var(--green) 0%, var(--green-deep) 100%);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: 0;
-  border-radius: var(--radius-pill);
+  border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 6px 14px -6px rgba(11, 92, 34, 0.55);
-  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
+  transition: transform 120ms ease, box-shadow 160ms ease, opacity 140ms ease;
+}
+
+.cushion-widget__upload-button:hover:not(:disabled) {
+  box-shadow: 0 10px 22px -8px rgba(11, 92, 34, 0.72);
+  transform: translateY(-1px);
 }
 
 .cushion-widget__upload-button:active:not(:disabled) {
-  transform: scale(0.96);
-  box-shadow: 0 3px 8px -4px rgba(11, 92, 34, 0.5);
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 2px 5px -3px rgba(11, 92, 34, 0.5);
 }
 
 .cushion-widget__upload-button:disabled {

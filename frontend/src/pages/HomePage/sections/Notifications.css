@@ -5,12 +5,10 @@
   padding: 16px 18px;
   margin-bottom: 16px;
   color: #ffffff;
-  background:
-    linear-gradient(110deg, rgba(11, 92, 34, 0.96), rgba(33, 160, 56, 0.9)),
-    linear-gradient(135deg, #21a038, #8acb5a);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 28px -18px rgba(11, 92, 34, 0.7);
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
 }
 
 .notifications__marker {
