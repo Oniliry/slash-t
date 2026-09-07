@@ -92,18 +92,25 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.interactive:
-        prompt_decisions_interactive(result.pending_candidates)
-        # Пересчитываем итог с учётом подтверждённых переводов
-        result = calculate_cushion(
-            args.pdf,
-            decisions={
-                c.counterparty: {"include": c.include, "label": c.label}
-                for c in result.candidates
-            },
-            strategy=args.strategy,
-            min_month_share=args.min_month_share,
-            amount_tolerance=args.amount_tolerance,
-        )
+        if not result.pending_candidates:
+            print(
+                "\nРегулярные переводы не обнаружены. Если ожидаемые переводы "
+                "не найдены, ослабьте порог разброса сумм, например: "
+                f"--amount-tolerance 0.3 (текущий: {args.amount_tolerance})."
+            )
+        else:
+            prompt_decisions_interactive(result.pending_candidates)
+            # Пересчитываем итог с учётом подтверждённых переводов
+            result = calculate_cushion(
+                args.pdf,
+                decisions={
+                    c.counterparty: {"include": c.include, "label": c.label}
+                    for c in result.candidates
+                },
+                strategy=args.strategy,
+                min_month_share=args.min_month_share,
+                amount_tolerance=args.amount_tolerance,
+            )
 
     print(build_report(result))
     return 0

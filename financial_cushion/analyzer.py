@@ -72,10 +72,11 @@ class GroupResult:
     """Итог по одной группе расходов."""
 
     name: str
-    monthly_amount: float   # оценочная сумма на следующий месяц
+    monthly_amount: float   # оценочная сумма на следующий месяц (среднее)
     ops_count: int          # среднее число операций в месяц
     description: str        # пояснение, что входит в группу
     included: bool          # включена ли в подушку
+    total_amount: float = 0.0  # всего потрачено за все полные месяцы
     operations: List[str] = field(default_factory=list)  # «операция — сумма»
 
 
@@ -84,10 +85,14 @@ class TransferCandidate:
     """Регулярный перевод, требующий решения пользователя."""
 
     counterparty: str       # ФИО / счёт получателя перевода
-    amount: float           # медианная сумма перевода за месяц
-    occurrences: int        # сколько месяцев повторялся
+    amount: float           # сумма одного перевода (медиана), руб.
+    occurrences: int        # сколько раз повторялся
     label: Optional[str] = None     # пользовательское название услуги
     include: Optional[bool] = None  # включать ли в подушку (решение)
+    # Средняя трата на эту услугу В МЕСЯЦ (для включения в подушку).
+    # Для помесячно-стабильных переводов равна медиане помесячной суммы;
+    # для повторов одинаковой суммы — сумме повторов / число месяцев.
+    monthly_amount: Optional[float] = None
 
 
 @dataclass
@@ -220,28 +225,35 @@ def find_regular_transfers(
     min_month_share: float = 0.5,
     amount_tolerance: float = 0.10,
     min_occurrences: int = 2,
+    min_equal_repeats: int = 3,
 ) -> List[TransferCandidate]:
-    """Поиск «скрытых подписок» среди переводов.
+    """Поиск «скрытых подписок» среди переводов — два механизма.
 
-    Перевод контрагенту считается регулярным, если:
-      - он повторялся не менее ``min_occurrences`` раз и не менее чем в
-        ``min_month_share`` доле месяцев периода (т.е. практически
-        каждый месяц);
-      - суммы переводов примерно одинаковы: максимальное отклонение
-        помесячной суммы от медианы не превышает ``amount_tolerance``
-        (5–10% по умолчанию).
+    Механизм 1 — стабильные помесячные суммы: перевод контрагенту
+    повторялся не менее ``min_occurrences`` раз и не менее чем в
+    ``min_month_share`` доле месяцев, а отклонение помесячных сумм от
+    медианы не превышает ``amount_tolerance`` (5–10%).
 
-    Именно так алгоритм находит переводы ОДНОМУ И ТОМУ ЖЕ получателю
-    (совпадение ФИО в «Перевод для ...») — частные услуги: аренда,
-    репетитор, перевод за ЖКХ и т.п., которые не видны в категориях
-    Сбера и потому легко теряются в общей массе переводов.
+    Механизм 2 — повторы одинаковой суммы: переводы ОДНОМУ контрагенту
+    с одинаковой суммой (разброс до 1 руб., на случай копеек) встречаются
+    не менее ``min_equal_repeats`` раз. Ловит «плавающие» по месяцам
+    услуги (напр. 455 -> 416 -> 385 не проходит механизм 1, но
+    455 руб. x 6 раз — проходит механизм 2).
+
+    Возвращает не более одного кандидата на контрагента: приоритет у
+    механизма 1. ``candidate.amount`` — сумма одного перевода,
+    ``candidate.monthly_amount`` — средняя трата в месяц.
     """
     transfers = expenses[expenses["group"] == TRANSFERS_GROUP]
     candidates: List[TransferCandidate] = []
     if transfers.empty or not len(months):
         return candidates
 
-    min_months = max(min_occurrences, math.ceil(min_month_share * len(months)))
+    n_months = len(months)
+    min_months = max(min_occurrences, math.ceil(min_month_share * n_months))
+    seen: set[str] = set()
+
+    # --- Механизм 1: стабильные помесячные суммы ---------------------------
     for counterparty, grp in transfers.groupby("counterparty"):
         monthly = grp.groupby("month")["amount"].sum()
         if len(monthly) < min_months:
@@ -257,6 +269,65 @@ def find_regular_transfers(
                 counterparty=str(counterparty),
                 amount=round(median, 2),
                 occurrences=int(len(monthly)),
+                monthly_amount=round(median, 2),
+            )
+        )
+        seen.add(str(counterparty))
+    candidates.sort(key=lambda c: -c.amount)
+
+    # --- Механизм 2: повторы одинаковой суммы ------------------------------
+    def _norm_name(name: str) -> str:
+        """Нормализация имени: регистр/пробелы/пунктуация не важны.
+
+        «АО "T-Банк"», «АО "TБанк"» и «АО "T-Bank"» — один контрагент.
+        """
+        return "".join(ch for ch in name.lower() if ch.isalnum())
+
+    def _equal_amount_clusters(values: "pd.Series") -> List[List[float]]:
+        """Кластеры сумм с разбросом не более 1 руб. (жадная группировка)."""
+        sorted_vals = sorted(float(v) for v in values)
+        clusters: List[List[float]] = []
+        current: List[float] = []
+        for v in sorted_vals:
+            if current and v - current[0] > 1.0:
+                clusters.append(current)
+                current = []
+            current.append(v)
+        if current:
+            clusters.append(current)
+        return clusters
+
+    # Группируем по нормализованному имени, для показа берём самое
+    # частое исходное написание.
+    seen_norm = {_norm_name(c) for c in seen}
+    by_norm: Dict[str, "pd.DataFrame"] = {}
+    names: Dict[str, Dict[str, int]] = {}
+    for counterparty, grp in transfers.groupby("counterparty"):
+        key = _norm_name(str(counterparty))
+        by_norm.setdefault(key, grp)
+        names.setdefault(key, {})
+        names[key][str(counterparty)] = names[key].get(str(counterparty), 0) + 1
+
+    for key, grp in by_norm.items():
+        if key in seen_norm:
+            continue
+        # Не более одного кандидата на контрагента: самый частый кластер
+        # одинаковых сумм.
+        best_cluster: List[float] = []
+        for cluster in _equal_amount_clusters(grp["amount"]):
+            if len(cluster) > len(best_cluster):
+                best_cluster = cluster
+        if len(best_cluster) < min_equal_repeats:
+            continue
+        per_transfer = float(pd.Series(best_cluster).median())
+        monthly_spend = sum(best_cluster) / n_months
+        display = max(names[key], key=names[key].get)
+        candidates.append(
+            TransferCandidate(
+                counterparty=display,
+                amount=round(per_transfer, 2),
+                occurrences=int(len(best_cluster)),
+                monthly_amount=round(monthly_spend, 2),
             )
         )
     candidates.sort(key=lambda c: -c.amount)
@@ -313,8 +384,12 @@ def prompt_decisions_interactive(candidates: List[TransferCandidate]) -> None:
             f"«{cand.counterparty}» на сумму ~{cand.amount:,.2f} руб., "
             f"повторялся {cand.occurrences} раз(а)."
         )
-        label = input("  Как обозначить эту услугу (Enter — оставить как есть): ").strip()
-        answer = input("  Включать ли её в финансовую подушку? [y/N]: ").strip().lower()
+        try:
+            label = input("  Как обозначить эту услугу (Enter — оставить как есть): ").strip()
+            answer = input("  Включать ли её в финансовую подушку? [y/N]: ").strip().lower()
+        except EOFError:
+            # Неинтерактивный запуск / прерванный ввод: не включаем
+            label, answer = "", ""
         if label:
             cand.label = label
         cand.include = answer in {"y", "yes", "д", "да"}
@@ -350,6 +425,7 @@ def _aggregate_groups(
             base = float(monthly.sum() / n_months) if n_months else 0.0
 
         avg_ops = math.ceil(len(grp) / n_months) if n_months else 0
+        total = float(monthly.sum())
         sorted_ops = grp.sort_values("amount", ascending=False)
         operations = [
             f"{_shorten(name)} — {fmt_money(amount)} руб."
@@ -363,6 +439,7 @@ def _aggregate_groups(
                 ops_count=avg_ops,
                 description=description_for_group(group),
                 included=included,
+                total_amount=round(total, 2),
                 operations=operations,
             )
         )
@@ -427,10 +504,15 @@ def calculate_cushion(
     resolved = [
         GroupResult(
             name=c.label or f"Перевод: {c.counterparty}",
-            monthly_amount=c.amount,
+            monthly_amount=round(c.monthly_amount if c.monthly_amount is not None else c.amount, 2),
             ops_count=1,
             description="подтверждённый регулярный перевод (услуга)",
             included=bool(c.include),
+            total_amount=round(
+                (c.monthly_amount if c.monthly_amount is not None else c.amount)
+                * len(months),
+                2,
+            ),
             operations=[f"{_shorten(c.counterparty)} — {fmt_money(c.amount)} руб."],
         )
         for c in candidates
@@ -650,6 +732,7 @@ def _aggregate_active(
                 if group.startswith("Перевод:")
                 else description_for_group(group),
                 included=True,
+                total_amount=round(float(grp["amount"].sum()), 2),
                 operations=[
                     f"{_shorten(cp)} — {fmt_money(a)} руб."
                     for cp, a in zip(sorted_grp["counterparty"], sorted_grp["amount"])
