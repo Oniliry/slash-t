@@ -32,7 +32,7 @@ function AddPurchaseButton({ variant = 'navbar' }) {
           className="tab-bar__add"
           type="button"
           onClick={() => setMobileMode('scanner')}
-          aria-label="Добавить покупку"
+          aria-label="Добавить трату"
         >
           <span className="tab-bar__add-icon">+</span>
         </button>
@@ -64,11 +64,11 @@ function AddPurchaseButton({ variant = 'navbar' }) {
         className="navbar__add"
         type="button"
         onClick={() => setIsOpen(true)}
-        aria-label="Добавить покупку"
-        title="Добавить покупку"
+        aria-label="Добавить трату"
+        title="Добавить трату"
       >
         <span className="navbar__add-icon" aria-hidden="true">+</span>
-        <span>Добавить расход</span>
+        <span>Добавить трату</span>
       </button>
       {isOpen && (
         <AddPurchaseModal onClose={() => setIsOpen(false)} onCreated={handleCreated} />
