@@ -314,6 +314,26 @@
   border-radius: 999px;
 }
 
+/* Кнопка ручного переключения камеры — показывается только если у
+   устройства нашлось больше одной камеры (нужна далеко не всегда, но не
+   должна выглядеть неоформленной, если появится). */
+.receipt-scanner__switch {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top));
+  right: 20px;
+  z-index: 3;
+  padding: 8px 14px;
+  color: #ffffff;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 0;
+  border-radius: 999px;
+}
+
+.receipt-scanner__switch:active {
+  background: rgba(0, 0, 0, 0.6);
+}
+
 .receipt-scanner__status {
   position: absolute;
   top: 50%;

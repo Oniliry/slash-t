@@ -4,15 +4,30 @@ import { loadScriptOnce } from "../../shared/lib/loadScript.js";
 
 import "./AddPurchase.css";
 
-const HTML5_QRCODE_SRC = "https://jsdelivr.net";
+// html5-qrcode — готовое, широко используемое решение для сканирования
+// QR-кодов прямо в браузере (обёртка над getUserMedia). Грузим с CDN, чтобы
+// не тащить лишнюю зависимость в сборку. Раньше здесь был битый адрес
+// ("https://jsdelivr.net" без пути до самого файла), из-за чего скрипт
+// физически не загружался — почтено настоящий адрес файла библиотеки.
+const HTML5_QRCODE_SRC =
+  "https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js";
 const READER_ELEMENT_ID = "receipt-qr-reader";
 
 // Чистый, облегченный конфиг без ограничений, ломающих Safari
 const SCAN_CONFIG = {
   fps: 10,
   qrbox: { width: 260, height: 260 },
-  aspectRatio: 1
+  aspectRatio: 1,
 };
+
+// Готовое решение "из коробки": просим у браузера именно заднюю камеру
+// через стандартный WebRTC-constraint facingMode. html5-qrcode умеет
+// принимать такой объект напрямую в start() вместо конкретного deviceId —
+// это ровно то, что задокументировано в самой библиотеке для выбора
+// задней/фронтальной камеры, и надёжнее, чем угадывать камеру по названию
+// устройства (на части телефонов и особенно до выдачи разрешения на
+// камеру label может быть пустым или не содержать слов "back"/"rear").
+const REAR_CAMERA_CONSTRAINT = { facingMode: { ideal: "environment" } };
 
 function describeCameraError(err) {
   if (typeof window !== "undefined" && window.isSecureContext === false) {
@@ -45,14 +60,17 @@ function describeCameraError(err) {
   return "Не удалось включить камеру. Проверьте разрешение на доступ к камере в браузере и нажмите «Повторить».";
 }
 
-function pickInitialCameraIndex(cameras) {
+// Резервный вариант на случай, если у устройства вообще нет задней камеры
+// (например, ноутбук с одной фронтальной веб-камерой) и facingMode
+// "environment" не смог подобрать поток — тогда просто перечисляем все
+// камеры и стараемся угадать заднюю по названию, а если не вышло, берём
+// последнюю в списке (на телефонах это почти всегда основная задняя).
+function pickFallbackCameraIndex(cameras) {
   const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн|основн/i.test(camera.label ?? ""));
   if (backIndex !== -1) return backIndex;
 
-  // На iOS до выдачи прав labels пустые. 
-  // Берем последнюю камеру в списке — это всегда основная задняя.
   if (cameras.length > 1) {
-    return cameras.length - 1; 
+    return cameras.length - 1;
   }
   return 0;
 }
@@ -60,13 +78,13 @@ function pickInitialCameraIndex(cameras) {
 function ReceiptScannerModal({ onDecoded, onManualEntry }) {
   const scannerRef = useRef(null);
   const camerasRef = useRef([]);
+  const cameraIndexRef = useRef(-1);
   const isFinishingRef = useRef(false);
   const isMountedRef = useRef(true);
 
   const [status, setStatus] = useState("loading"); // 'loading' | 'scanning' | 'error'
   const [error, setError] = useState("");
   const [retryToken, setRetryToken] = useState(0);
-  const [cameraIndex, setCameraIndex] = useState(0);
   const [cameraCount, setCameraCount] = useState(0);
 
   async function stopScanner() {
@@ -99,6 +117,30 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     // Обычный пропуск кадра без QR-кода
   }
 
+  // Пытается запустить сканер сразу с задней камерой через constraint.
+  // Если на устройстве такой камеры нет (или браузер не поддерживает
+  // constraint в этом месте API), откатывается к перечислению камер.
+  async function startWithRearCamera(scanner) {
+    try {
+      await scanner.start(REAR_CAMERA_CONSTRAINT, SCAN_CONFIG, handleDecoded, handleScanFailure);
+      cameraIndexRef.current = -1;
+      return;
+    } catch {
+      // Продолжаем ниже — пробуем через явный список камер.
+    }
+
+    const { Html5Qrcode } = window;
+    const cameras = await Html5Qrcode.getCameras();
+    if (!cameras || cameras.length === 0) {
+      throw new Error("no-camera");
+    }
+    camerasRef.current = cameras;
+
+    const index = pickFallbackCameraIndex(cameras);
+    await scanner.start(cameras[index].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
+    cameraIndexRef.current = index;
+  }
+
   useEffect(() => {
     isMountedRef.current = true;
     isFinishingRef.current = false;
@@ -124,28 +166,24 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
             const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
             scannerRef.current = scanner;
 
-            const cameras = await Html5Qrcode.getCameras();
-            if (!cameras || cameras.length === 0) {
-              throw new Error("no-camera");
-            }
-            camerasRef.current = cameras;
-            if (!isMountedRef.current) return;
-            setCameraCount(cameras.length);
-
-            const initialIndex = pickInitialCameraIndex(cameras);
-            setCameraIndex(initialIndex);
-
-            await scanner.start(
-              cameras[initialIndex].id,
-              SCAN_CONFIG,
-              handleDecoded,
-              handleScanFailure
-            );
+            await startWithRearCamera(scanner);
 
             if (!isMountedRef.current) {
               stopScanner();
               return;
             }
+
+            // Список камер нужен только для необязательной кнопки
+            // переключения — на большинстве телефонов с одной задней
+            // камерой она просто не отобразится.
+            if (camerasRef.current.length === 0) {
+              try {
+                camerasRef.current = await Html5Qrcode.getCameras();
+              } catch {
+                camerasRef.current = [];
+              }
+            }
+            if (isMountedRef.current) setCameraCount(camerasRef.current.length);
 
             setStatus("scanning");
           } catch (err) {
@@ -177,7 +215,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     const scanner = scannerRef.current;
     if (!scanner || cameras.length < 2) return;
 
-    const nextIndex = (cameraIndex + 1) % cameras.length;
+    const nextIndex = (cameraIndexRef.current + 1) % cameras.length;
 
     try {
       await scanner.stop();
@@ -187,7 +225,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
 
     try {
       await scanner.start(cameras[nextIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
-      setCameraIndex(nextIndex);
+      cameraIndexRef.current = nextIndex;
       setStatus("scanning");
     } catch (err) {
       setError(describeCameraError(err));
