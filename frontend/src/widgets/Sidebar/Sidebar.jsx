@@ -5,6 +5,7 @@ import { useAuth } from '../../app/providers/AuthProvider.jsx'
 const navigationItems = [
   { to: '/', label: 'Главная', end: true },
   { to: '/expenses', label: 'Расходы' },
+  { to: '/financial-cushion', label: 'ФинПодушка' },
   { to: '/family', label: 'Семья' },
   { to: '/profile', label: 'Профиль' },
 ]

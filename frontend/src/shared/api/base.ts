@@ -1,6 +1,8 @@
 import type { APIResponse } from './types'
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+// Экспортируется для отдельных запросов вне request() — например,
+// multipart-загрузки файлов с FormData (Content-Type выставляет браузер).
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 export async function request<T>(
   path: string,
