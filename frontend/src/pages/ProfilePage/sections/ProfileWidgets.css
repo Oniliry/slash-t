@@ -60,31 +60,22 @@
 
 .profile-widget__save {
   flex-shrink: 0;
-  padding: 10px 18px;
+  padding: 11px 20px;
   color: #ffffff;
   font-weight: 700;
   white-space: nowrap;
   background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
-  transition: box-shadow 160ms ease, transform 120ms ease, opacity 160ms ease;
-}
-
-.profile-widget__save:hover:not(:disabled) {
-  box-shadow: 0 10px 22px -8px rgba(11, 92, 34, 0.72);
-  transform: translateY(-1px);
-}
-
-.profile-widget__save:active:not(:disabled) {
-  transform: translateY(2px) scale(0.98);
-  box-shadow: 0 2px 5px -3px rgba(11, 92, 34, 0.5);
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.55);
 }
 
 .profile-widget__save:disabled {
-  cursor: default;
-  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--ink-faint);
+  box-shadow: none;
+  opacity: 0.7;
 }
 
 .profile-widget__readonly-list {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { getExpenses, getMyDebts } from "../../../shared/api/expenses.ts";
+import { getExpenses } from "../../../shared/api/expenses.ts";
 import { getMyFamily } from "../../../shared/api/family.ts";
 import "./DashboardSummary.css";
 
@@ -10,12 +10,6 @@ const currencyFormatter = new Intl.NumberFormat("ru-RU", {
 
 function formatAmount(value) {
   return `${currencyFormatter.format(value)} ₽`;
-}
-
-function formatDebtBalance(value) {
-  if (value === 0) return "0 ₽";
-  const sign = value > 0 ? "+" : "-";
-  return `${sign}${currencyFormatter.format(Math.abs(value))} ₽`;
 }
 
 function isSameMonth(isoDate, now) {
@@ -39,15 +33,13 @@ function buildDonut(spent, budget) {
 function DashboardSummary() {
   const [familyBudget, setFamilyBudget] = useState(0);
   const [monthTotal, setMonthTotal] = useState(0);
-  const [debtBalance, setDebtBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    const [familyResponse, expensesResponse, debtsResponse] = await Promise.all([
+    const [familyResponse, expensesResponse] = await Promise.all([
       getMyFamily(),
       getExpenses(),
-      getMyDebts(),
     ]);
 
     if (!familyResponse.error && familyResponse.data) {
@@ -67,18 +59,6 @@ function DashboardSummary() {
       setMonthTotal(total);
     }
 
-    if (!debtsResponse.error && debtsResponse.data) {
-      const owed = debtsResponse.data.owed_to_me.reduce(
-        (sum, debt) => sum + Number(debt.amount),
-        0,
-      );
-      const owedByMe = debtsResponse.data.i_owe.reduce(
-        (sum, debt) => sum + Number(debt.amount),
-        0,
-      );
-      setDebtBalance(owed - owedByMe);
-    }
-
     setIsLoading(false);
   }, []);
 
@@ -86,11 +66,7 @@ function DashboardSummary() {
     load();
 
     window.addEventListener("slash-t:expense-created", load);
-    window.addEventListener("slash-t:debts-updated", load);
-    return () => {
-      window.removeEventListener("slash-t:expense-created", load);
-      window.removeEventListener("slash-t:debts-updated", load);
-    };
+    return () => window.removeEventListener("slash-t:expense-created", load);
   }, [load]);
 
   if (isLoading) {
@@ -127,19 +103,6 @@ function DashboardSummary() {
           <div className="dashboard-budget__figure">
             <strong className="stat__value">{formatAmount(monthTotal)}</strong>
             <span className="stat__caption">общие расходы за месяц</span>
-          </div>
-          <div className="dashboard-budget__figure">
-            <strong
-              className={`stat__value ${debtBalance < 0
-                ? "dashboard-budget__debt--negative"
-                : debtBalance > 0
-                  ? "dashboard-budget__debt--positive"
-                  : ""
-                }`}
-            >
-              {formatDebtBalance(debtBalance)}
-            </strong>
-            <span className="stat__caption">общий баланс ваших долгов</span>
           </div>
         </div>
 

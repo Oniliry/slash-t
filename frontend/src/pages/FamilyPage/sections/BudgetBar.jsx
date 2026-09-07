@@ -13,11 +13,7 @@ function BudgetBar({ members, isAdmin, onChanged }) {
   const containerRef = useRef(null)
   const [drag, setDrag] = useState(null)
 
-  // Доход меняется с помощью слайдера, поэтому порядок должен зависеть
-  // только от стабильного идентификатора участника.
-  const adults = members
-    .filter((member) => member.role === 'adult')
-    .sort((a, b) => a.id - b.id)
+  const adults = members.filter((member) => member.role === 'adult')
   const totalIncome = adults.reduce((sum, member) => sum + Number(member.monthly_income ?? 0), 0)
 
   // Считаем базовые (без учёта текущего перетаскивания) координаты сегментов в процентах.

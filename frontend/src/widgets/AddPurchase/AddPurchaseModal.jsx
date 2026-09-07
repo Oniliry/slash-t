@@ -3,12 +3,12 @@ import { createPortal } from 'react-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import { getMyFamily } from '../../shared/api/family.ts'
-import { createExpense, updateExpense } from '../../shared/api/expenses.ts'
+import { createExpense } from '../../shared/api/expenses.ts'
 import { EXPENSE_CATEGORIES } from '../../shared/lib/expenseCategories.js'
 
 import './AddPurchase.css'
 
-function AddPurchaseModal({ onClose, onCreated, expense = null }) {
+function AddPurchaseModal({ onClose, onCreated }) {
   const { user } = useAuth()
 
   const [members, setMembers] = useState([])
@@ -18,7 +18,6 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
   const [category, setCategory] = useState('groceries')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
-  const isEditing = Boolean(expense)
 
   useEffect(() => {
     let isCurrent = true
@@ -42,13 +41,6 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
     }
   }, [onClose])
 
-  useEffect(() => {
-    if (!expense) return
-    setAmount(String(expense.amount))
-    setCategory(expense.category)
-    setOwnerChoice(expense.owner_type === 'shared' ? 'shared' : String(expense.owner_id ?? user?.id))
-  }, [expense, user?.id])
-
   const parsedAmount = Number(amount.replace(',', '.'))
   const canSave = parsedAmount > 0 && !isSaving
 
@@ -69,13 +61,11 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
             category,
           }
 
-    const response = isEditing
-      ? await updateExpense(expense.id, payload)
-      : await createExpense(payload)
+    const response = await createExpense(payload)
     setIsSaving(false)
 
     if (response.error) {
-      setError(response.message ?? (isEditing ? 'Не удалось изменить покупку.' : 'Не удалось добавить покупку.'))
+      setError(response.message ?? 'Не удалось добавить покупку.')
       return
     }
 
@@ -89,11 +79,11 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
         className="add-purchase-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={isEditing ? 'Изменить покупку' : 'Добавить покупку'}
+        aria-label="Добавить покупку"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="add-purchase-modal__header">
-          <h2>{isEditing ? 'Изменить покупку' : 'Добавить покупку'}</h2>
+          <h2>Добавить покупку</h2>
           <button
             className="add-purchase-modal__close"
             type="button"
@@ -105,10 +95,7 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label
-            className="add-purchase-modal__field add-purchase-modal__field--amount"
-            htmlFor="purchase-amount"
-          >
+          <label className="add-purchase-modal__field" htmlFor="purchase-amount">
             Сумма покупки
           </label>
           <div className="add-purchase-modal__amount-row">
@@ -169,28 +156,18 @@ function AddPurchaseModal({ onClose, onCreated, expense = null }) {
                   category === item.id ? ' add-purchase-modal__category--active' : ''
                 }`}
                 onClick={() => setCategory(item.id)}
-                aria-pressed={category === item.id}
               >
-                <span className="add-purchase-modal__category-icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <span className="add-purchase-modal__category-label">{item.label}</span>
+                <span aria-hidden="true">{item.icon}</span>
+                {item.label}
               </button>
             ))}
           </div>
 
           {error && <p className="add-purchase-modal__error">{error}</p>}
 
-          <div className={isEditing ? 'add-purchase-modal__actions' : undefined}>
-            {isEditing && (
-              <button className="add-purchase-modal__cancel" type="button" onClick={onClose}>
-                Отменить
-              </button>
-            )}
-            <button className="add-purchase-modal__submit" type="submit" disabled={!canSave}>
-              {isSaving ? 'Сохраняем...' : isEditing ? 'Сохранить' : 'Добавить покупку'}
-            </button>
-          </div>
+          <button className="add-purchase-modal__submit" type="submit" disabled={!canSave}>
+            {isSaving ? 'Добавляем...' : 'Добавить покупку'}
+          </button>
         </form>
       </div>
     </div>,

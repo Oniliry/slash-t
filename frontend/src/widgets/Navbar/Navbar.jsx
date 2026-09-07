@@ -2,13 +2,10 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import AddPurchaseButton from '../AddPurchase/AddPurchaseButton.jsx'
-import { LogoutIcon, ProfileIcon } from '../../shared/ui/icons.jsx'
-
-import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
-  const { logout, user } = useAuth()
+  const { logout } = useAuth()
 
   async function handleLogout() {
     await logout()
@@ -23,18 +20,9 @@ function Navbar() {
       </Link>
       <div className="navbar__actions">
         <AddPurchaseButton variant="navbar" />
-        <span className="navbar__user">
-          <ProfileIcon />
-          <span>{user?.name ?? 'Профиль'}</span>
-        </span>
-        <button
-          className="navbar__logout"
-          type="button"
-          onClick={handleLogout}
-          aria-label="Выйти"
-          title="Выйти"
-        >
-          <LogoutIcon />
+        <span className="navbar__status">Online</span>
+        <button className="navbar__logout" type="button" onClick={handleLogout}>
+          Выйти
         </button>
       </div>
     </header>

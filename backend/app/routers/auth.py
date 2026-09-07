@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
 from dependencies.auth import AuthServiceDep
 from dependencies.token import get_bearer_token
@@ -14,7 +14,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def register_user(
     data: UserRegisterRequest,
     service: AuthServiceDep,
-    response: Response,
 ):
     """
     Регистрирует нового пользователя.
@@ -23,14 +22,13 @@ async def register_user(
     :param service: Сервис авторизации, предоставленный FastAPI.
     :return: Данные пользователя вместе с токеном сессии или сообщение о занятом логине.
     """
-    return await service.register_user(data, response)
+    return await service.register_user(data)
 
 
 @router.post("/login")
 async def login_user(
     data: UserLoginRequest,
     service: AuthServiceDep,
-    response: Response,
 ):
     """
     Выполняет вход пользователя по логину и паролю.
@@ -40,7 +38,7 @@ async def login_user(
     :return: Данные пользователя вместе с токеном сессии или ошибку с HTTP-кодом 401.
     """
 
-    return await service.login_user(data, response)
+    return await service.login_user(data)
 
 
 @router.post("/me")
@@ -61,7 +59,6 @@ async def get_current_user(
 @router.post("/logout")
 async def logout_user(
     service: AuthServiceDep,
-    response: Response,
 ):
     """
     Завершает текущую сессию пользователя.
@@ -72,7 +69,7 @@ async def logout_user(
     :param service: Сервис авторизации, предоставленный FastAPI.
     :return: Подтверждение выхода из аккаунта.
     """
-    return service.logout_user(response)
+    return service.logout_user()
 
 
 __all__ = [

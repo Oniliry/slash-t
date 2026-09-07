@@ -1,48 +1,27 @@
-/* Основное действие навбара: добавление расхода. */
+/* Кнопка "+" в верхнем баре (десктоп) — сплошной зелёный, самый
+   насыщенный элемент на плавающем стекле навбара. */
 .navbar__add {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 0 14px 0 10px;
-  color: var(--green-deep);
-  font-size: 12px;
-  font-weight: 700;
-  font-family: inherit;
-  white-space: nowrap;
-  background: rgba(227, 245, 230, 0.72);
-  border: 1px solid rgba(33, 160, 56, 0.2);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 8px 18px -12px rgba(11, 92, 34, 0.45);
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
-    transform 120ms ease, box-shadow 160ms ease;
-}
-
-.navbar__add-icon {
   display: grid;
-  width: 22px;
-  height: 22px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   color: #ffffff;
-  font-size: 18px;
-  font-weight: 400;
+  font-size: 21px;
   line-height: 1;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 3px 8px -4px rgba(11, 92, 34, 0.7);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 14px -6px rgba(11, 92, 34, 0.6);
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .navbar__add:hover {
-  color: var(--green-deep);
-  background: var(--green-soft);
-  border-color: rgba(33, 160, 56, 0.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 10px 20px -12px rgba(11, 92, 34, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 18px -6px rgba(11, 92, 34, 0.7);
 }
 
 .navbar__add:active {
-  transform: translateY(2px) scale(0.94);
-  box-shadow: inset 0 1px 2px rgba(11, 92, 34, 0.12), 0 2px 5px -3px rgba(11, 92, 34, 0.5);
+  transform: scale(0.93);
 }
 
 @media (max-width: 700px) {
@@ -90,7 +69,7 @@
   inset: 0;
   z-index: 100;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   padding: 16px;
   background: rgba(8, 20, 13, 0.45);
@@ -152,11 +131,6 @@
   font-weight: 650;
 }
 
-.add-purchase-modal__field--amount {
-  display: block;
-  margin-bottom: 14px;
-}
-
 .add-purchase-modal__amount-row {
   position: relative;
   margin-bottom: 20px;
@@ -172,17 +146,6 @@
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid var(--glass-line);
   border-radius: var(--radius-md);
-}
-
-.add-purchase-modal__amount-row input::-webkit-outer-spin-button,
-.add-purchase-modal__amount-row input::-webkit-inner-spin-button {
-  margin: 0;
-  -webkit-appearance: none;
-}
-
-.add-purchase-modal__amount-row input[type='number'] {
-  appearance: textfield;
-  -moz-appearance: textfield;
 }
 
 .add-purchase-modal__amount-row input:focus {
@@ -233,73 +196,30 @@
 }
 
 .add-purchase-modal__categories {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
 
 .add-purchase-modal__category {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  min-width: 0;
-  min-height: 76px;
-  padding: 9px 5px;
-  color: var(--ink-soft);
-  font-size: 11px;
-  font-weight: 650;
-  line-height: 1.2;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.38);
-  border: 1px solid var(--glass-line);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease,
-    transform 120ms ease, box-shadow 160ms ease;
-}
-
-.add-purchase-modal__category:hover {
+  padding: 9px 13px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.68);
-  border-color: rgba(33, 160, 56, 0.28);
-  transform: translateY(-1px);
-}
-
-.add-purchase-modal__category:active {
-  transform: translateY(1px) scale(0.97);
-}
-
-.add-purchase-modal__category-icon {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  font-size: 18px;
-  line-height: 1;
-  background: rgba(227, 245, 230, 0.72);
-  border-radius: 50%;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .add-purchase-modal__category--active {
   color: var(--green-deep);
   background: var(--green-soft);
   border-color: var(--green);
-  box-shadow: 0 7px 14px -10px rgba(11, 92, 34, 0.75);
-}
-
-.add-purchase-modal__category--active .add-purchase-modal__category-icon {
-  background: #ffffff;
-  box-shadow: 0 2px 6px -4px rgba(11, 92, 34, 0.7);
-}
-
-.add-purchase-modal__category-label {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .add-purchase-modal__hint {
@@ -336,203 +256,4 @@
 
 .add-purchase-modal__submit:not(:disabled):hover {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 12px 26px -10px rgba(11, 92, 34, 0.7);
-}
-
-.add-purchase-modal__actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.add-purchase-modal__cancel {
-  padding: 14px;
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 650;
-  background: rgba(16, 36, 26, 0.06);
-  border: 1px solid var(--glass-line);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-/* ---- Мобильный сканер QR-кода чека ---- */
-.receipt-scanner {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  overflow: hidden;
-  background: #000;
-}
-
-.receipt-scanner__video {
-  position: absolute;
-  inset: 0;
-}
-
-.receipt-scanner__video video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-}
-
-/* html5-qrcode иногда рисует свой canvas поверх видео — прячем его,
-   у нас собственная рамка-прицел поверх картинки с камеры. */
-.receipt-scanner__video canvas {
-  display: none !important;
-}
-
-.receipt-scanner__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.receipt-scanner__frame {
-  width: min(72vw, 300px);
-  height: min(72vw, 300px);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  /* Гигантская тень вокруг рамки создаёт полупрозрачный оверлей
-     с "вырезом" по центру — классический UI сканера. */
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
-}
-
-.receipt-scanner__hint {
-  margin-top: 20px;
-  padding: 8px 16px;
-  color: #ffffff;
-  font-size: 14px;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 999px;
-}
-
-/* Кнопка ручного переключения камеры — показывается только если у
-   устройства нашлось больше одной камеры (нужна далеко не всегда, но не
-   должна выглядеть неоформленной, если появится). */
-.receipt-scanner__switch {
-  position: absolute;
-  top: calc(20px + env(safe-area-inset-top));
-  right: 20px;
-  z-index: 3;
-  padding: 8px 14px;
-  color: #ffffff;
-  font-size: 13px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 0;
-  border-radius: 999px;
-}
-
-.receipt-scanner__switch:active {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.receipt-scanner__status {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  z-index: 3;
-  max-width: 80vw;
-  padding: 14px 18px;
-  color: #ffffff;
-  font-size: 14px;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 14px;
-  transform: translate(-50%, -50%);
-}
-
-.receipt-scanner__status--error {
-  background: rgba(160, 32, 32, 0.85);
-}
-
-.receipt-scanner__status-text {
-  margin: 0 0 12px;
-}
-
-.receipt-scanner__retry {
-  padding: 8px 20px;
-  color: #17202a;
-  font-size: 13px;
-  font-weight: 650;
-  background: #ffffff;
-  border: 0;
-  border-radius: 999px;
-}
-
-.receipt-scanner__manual {
-  position: absolute;
-  bottom: calc(28px + env(safe-area-inset-bottom));
-  left: 50%;
-  z-index: 3;
-  padding: 14px 28px;
-  color: #17202a;
-  font-size: 15px;
-  font-weight: 650;
-  background: #ffffff;
-  border: 0;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.receipt-scanner__manual:active {
-  transform: translateX(-50%) scale(0.96);
-}
-
-/* ---- Экран результата расшифровки QR ---- */
-.scan-result {
-  position: fixed;
-  inset: 0;
-  z-index: 110;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: #0e1013;
-}
-
-.scan-result__close {
-  position: absolute;
-  top: calc(16px + env(safe-area-inset-top));
-  right: 16px;
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  color: #ffffff;
-  font-size: 22px;
-  line-height: 1;
-  background: rgba(255, 255, 255, 0.12);
-  border: 0;
-  border-radius: 50%;
-}
-
-.scan-result__body {
-  width: 100%;
-  max-width: 420px;
-}
-
-.scan-result__label {
-  margin: 0 0 12px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.scan-result__text {
-  margin: 0;
-  padding: 16px;
-  overflow-wrap: anywhere;
-  color: #ffffff;
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
 }

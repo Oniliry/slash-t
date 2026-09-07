@@ -1,4 +1,4 @@
-import { request } from './base'
+import { request, setStoredToken, getStoredToken } from './base'
 import type { APIResponse } from './types'
 
 export type UserRole = 'adult' | 'child'
@@ -37,6 +37,10 @@ export async function registerUser(
     body: JSON.stringify(data),
   })
 
+  if (!response.error && response.data) {
+    setStoredToken(response.data.access_token)
+  }
+
   return response
 }
 
@@ -48,17 +52,37 @@ export async function loginUser(
     body: JSON.stringify(data),
   })
 
+  if (!response.error && response.data) {
+    setStoredToken(response.data.access_token)
+  }
+
   return response
 }
 
 export function getCurrentUser(): Promise<APIResponse<User>> {
+  // Если в этой вкладке токена нет — сразу считаем пользователя
+  // неавторизованным, не дожидаясь ответа сервера.
+  if (!getStoredToken()) {
+    return Promise.resolve({
+      error: true,
+      message: 'Пользователь не авторизован.',
+      data: null,
+      type: 'authentication_required',
+    })
+  }
+
   return request<User>('/auth/me', {
     method: 'POST',
   })
 }
 
 export async function logoutUser(): Promise<APIResponse<null>> {
-  return request<null>('/auth/logout', {
+  const response = await request<null>('/auth/logout', {
     method: 'POST',
   })
+
+  // Токен этой вкладки удаляем в любом случае — даже если запрос не дошёл до сервера.
+  setStoredToken(null)
+
+  return response
 }

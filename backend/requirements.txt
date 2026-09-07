@@ -4,6 +4,3 @@ PyJWT
 python-dotenv
 redis
 uvicorn[standard]
-python-multipart
-pandas>=2.0
-pdfplumber>=0.10

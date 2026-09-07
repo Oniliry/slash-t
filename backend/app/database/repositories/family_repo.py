@@ -117,24 +117,6 @@ class FamilyRepository:
 
         return Family.model_validate(dict(family_row))
 
-    async def delete_family(self, family_id: int, created_by: int) -> bool:
-        """Удаляет семью, если её создатель остаётся единственным участником."""
-        deleted_id = await self.db.fetchval(
-            """
-            DELETE FROM families
-            WHERE id = $1
-              AND created_by = $2
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM users
-                  WHERE family_id = $1 AND id <> $2
-              )
-            RETURNING id
-            """,
-            (family_id, created_by),
-        )
-        return deleted_id is not None
-
 
 __all__ = [
     "FamilyRepository",

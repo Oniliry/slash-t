@@ -36,7 +36,6 @@ export interface Expense {
   owner_id: number | null;
   payer_id: number;
   payer_name?: string | null;
-  can_edit?: boolean;
   category: ExpenseCategory;
   created_at: string;
   debts: Debt[];
@@ -59,16 +58,6 @@ export function createExpense(
 ): Promise<APIResponse<Expense>> {
   return request<Expense>('/expenses', {
     method: 'POST',
-    body: JSON.stringify(data),
-  })
-}
-
-export function updateExpense(
-  expenseId: number,
-  data: CreateExpenseRequest,
-): Promise<APIResponse<Expense>> {
-  return request<Expense>(`/expenses/${expenseId}`, {
-    method: 'PUT',
     body: JSON.stringify(data),
   })
 }

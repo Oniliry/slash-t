@@ -86,12 +86,6 @@ export function getMyFamily(): Promise<APIResponse<FamilyState>> {
   })
 }
 
-export function leaveFamily(): Promise<APIResponse<null>> {
-  return request<null>('/family/leave', {
-    method: 'POST',
-  })
-}
-
 export function renameFamily(
   data: RenameFamilyRequest,
 ): Promise<APIResponse<Family>> {

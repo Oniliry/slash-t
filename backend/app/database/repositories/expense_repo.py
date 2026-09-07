@@ -70,37 +70,6 @@ class ExpenseRepository:
 
         return [Expense.model_validate(dict(row)) for row in rows]
 
-    async def get_family_expense(self, expense_id: int, family_id: int) -> Optional[Expense]:
-        expense_row = await self.db.fetchrow(
-            """
-            SELECT id, family_id, payer_id, amount, owner_type, owner_id, category, created_at
-            FROM expenses
-            WHERE id = $1 AND family_id = $2
-            """,
-            (expense_id, family_id),
-        )
-        return Expense.model_validate(dict(expense_row)) if expense_row else None
-
-    async def update_expense(
-        self,
-        expense_id: int,
-        family_id: int,
-        amount: Decimal,
-        owner_type: ExpenseOwnerType,
-        owner_id: Optional[int],
-        category: ExpenseCategory,
-    ) -> Optional[Expense]:
-        expense_row = await self.db.fetchrow(
-            """
-            UPDATE expenses
-            SET amount = $3, owner_type = $4, owner_id = $5, category = $6
-            WHERE id = $1 AND family_id = $2
-            RETURNING id, family_id, payer_id, amount, owner_type, owner_id, category, created_at
-            """,
-            (expense_id, family_id, amount, owner_type, owner_id, category),
-        )
-        return Expense.model_validate(dict(expense_row)) if expense_row else None
-
 
 __all__ = [
     "ExpenseRepository",

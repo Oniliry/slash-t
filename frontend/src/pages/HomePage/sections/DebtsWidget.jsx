@@ -79,7 +79,6 @@ function DebtsWidget() {
 
     setError('')
     await loadDebts()
-    window.dispatchEvent(new CustomEvent('slash-t:debts-updated'))
   }
 
   if (isLoading) {

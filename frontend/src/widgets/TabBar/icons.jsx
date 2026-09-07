@@ -1,3 +1,7 @@
+// Минималистичные иконки для нижнего таббара (мобайл).
+// currentColor — цвет задаётся через CSS (.tab-bar__icon), чтобы легко
+// менять его для обычного и активного состояния вкладки.
+
 const commonProps = {
   width: 22,
   height: 22,
@@ -31,17 +35,6 @@ export function ReceiptIcon() {
   )
 }
 
-export function CushionIcon() {
-  return (
-    <svg {...commonProps}>
-      <path d="M12 3.5 19 6v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-2.5Z" />
-      <circle cx="12" cy="11" r="2.5" />
-      <path d="M12 9.5v3" />
-      <path d="M10.5 11h3" />
-    </svg>
-  )
-}
-
 export function FamilyIcon() {
   return (
     <svg {...commonProps}>
@@ -59,26 +52,6 @@ export function ProfileIcon() {
     <svg {...commonProps}>
       <circle cx="12" cy="8" r="3.4" />
       <path d="M5 20c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5" />
-    </svg>
-  )
-}
-
-export function LogoutIcon() {
-  return (
-    <svg {...commonProps}>
-      <path d="M14 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H14" />
-      <path d="M11 12h8" />
-      <path d="m16 8 4 4-4 4" />
-    </svg>
-  )
-}
-
-export function EditIcon() {
-  return (
-    <svg {...commonProps}>
-      <path d="m14.5 5.5 4 4" />
-      <path d="m5 19 1.2-4.3L15.8 5a1.7 1.7 0 0 1 2.4 0l.8.8a1.7 1.7 0 0 1 0 2.4l-9.7 9.6Z" />
-      <path d="M5 19h4" />
     </svg>
   )
 }
