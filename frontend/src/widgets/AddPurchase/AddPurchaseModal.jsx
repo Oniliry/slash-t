@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import { getMyFamily } from '../../shared/api/family.ts'
@@ -72,7 +73,7 @@ function AddPurchaseModal({ onClose, onCreated }) {
     onClose()
   }
 
-  return (
+  return createPortal(
     <div className="add-purchase-overlay" onClick={onClose}>
       <div
         className="add-purchase-modal"
@@ -169,7 +170,8 @@ function AddPurchaseModal({ onClose, onCreated }) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
