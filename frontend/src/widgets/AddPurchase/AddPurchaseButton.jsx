@@ -67,7 +67,8 @@ function AddPurchaseButton({ variant = 'navbar' }) {
         aria-label="Добавить покупку"
         title="Добавить покупку"
       >
-        +
+        <span className="navbar__add-icon" aria-hidden="true">+</span>
+        <span>Добавить расход</span>
       </button>
       {isOpen && (
         <AddPurchaseModal onClose={() => setIsOpen(false)} onCreated={handleCreated} />

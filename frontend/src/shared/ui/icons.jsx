@@ -1,7 +1,3 @@
-// Минималистичные иконки для нижнего таббара (мобайл).
-// currentColor — цвет задаётся через CSS (.tab-bar__icon), чтобы легко
-// менять его для обычного и активного состояния вкладки.
-
 const commonProps = {
   width: 22,
   height: 22,
@@ -38,9 +34,10 @@ export function ReceiptIcon() {
 export function CushionIcon() {
   return (
     <svg {...commonProps}>
-      <path d="M4 17.5 8.5 13l3 3 4.5-6 4 4" />
-      <path d="M4 20h16" />
-      <path d="M5 4h14v16H5z" />
+      <path d="M12 3.5 19 6v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-2.5Z" />
+      <circle cx="12" cy="11" r="2.5" />
+      <path d="M12 9.5v3" />
+      <path d="M10.5 11h3" />
     </svg>
   )
 }

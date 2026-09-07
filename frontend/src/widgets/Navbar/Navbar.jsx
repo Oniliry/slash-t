@@ -2,7 +2,9 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../../app/providers/AuthProvider.jsx'
 import AddPurchaseButton from '../AddPurchase/AddPurchaseButton.jsx'
-import { LogoutIcon, ProfileIcon } from '../TabBar/icons.jsx'
+import { LogoutIcon, ProfileIcon } from '../../shared/ui/icons.jsx'
+
+import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
