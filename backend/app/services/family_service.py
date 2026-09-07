@@ -62,7 +62,7 @@ class FamilyService:
     ) -> List[FamilyMemberResponse]:
         """
         Считает долю каждого взрослого в общем доходе семьи, помечает админа
-        и возвращает список участников, отсортированный по убыванию дохода.
+        и возвращает список участников в стабильном порядке по идентификатору.
 
         :param members: Список пользователей семьи.
         :param created_by: Идентификатор создателя (админа) семьи.
@@ -90,7 +90,9 @@ class FamilyService:
                 )
             )
 
-        responses.sort(key=lambda item: item.monthly_income or Decimal("0"), reverse=True)
+        # Порядок не должен зависеть от дохода: иначе изменение слайдера
+        # меняет позиции участников и связанные с ними цвета.
+        responses.sort(key=lambda item: item.id)
 
         return responses
 

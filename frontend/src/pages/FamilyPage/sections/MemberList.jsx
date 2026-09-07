@@ -102,11 +102,12 @@ function MemberList({ members, isAdmin, currentUserId, onChanged }) {
   const [expandedId, setExpandedId] = useState(null)
 
   let adultIndex = -1
+  const orderedMembers = [...members].sort((a, b) => a.id - b.id)
 
   return (
     <article className="family-widget member-list">
       <h2>Участники</h2>
-      {members.map((member) => {
+      {orderedMembers.map((member) => {
         if (member.role === 'adult') adultIndex += 1
         const dotColor = member.role === 'adult' ? getMemberColor(adultIndex) : '#d8e0e6'
         const isExpanded = expandedId === member.id
