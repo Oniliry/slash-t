@@ -1,4 +1,132 @@
-/* Общие .card/.section-heading/.list вынесены в index.css. */
+.expense-history {
+  overflow: hidden;
+}
+
+.expense-history__heading {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.expense-history__heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.expense-history__heading h2::before {
+  width: 9px;
+  height: 9px;
+  content: '';
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--green-soft);
+}
+
+.expense-history__filter {
+  padding: 5px 10px;
+  color: var(--green-deep);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--green-soft);
+  border-radius: var(--radius-pill);
+}
+
+.expense-history .expense-history__list {
+  display: grid;
+  gap: 2px;
+  overflow: visible;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+.expense-history__row {
+  position: relative;
+  min-height: 66px;
+  padding: 10px 12px;
+  overflow: hidden;
+  background: var(--glass-fill-soft);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 16px -13px rgba(16, 36, 26, 0.72);
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease,
+    box-shadow 160ms ease;
+  animation: expense-history-row-in 320ms ease both;
+}
+
+.expense-history__row:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.expense-history__row:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.expense-history__row:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.expense-history__row:nth-child(5) {
+  animation-delay: 160ms;
+}
+
+.expense-history__row::before {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 3px;
+  content: '';
+  background: var(--green);
+  border-radius: 0 4px 4px 0;
+}
+
+.expense-history__row:hover {
+  background: var(--green-soft);
+  border-color: var(--glass-line);
+  box-shadow: 0 9px 18px -14px rgba(16, 36, 26, 0.75);
+  transform: translateY(-1px);
+}
+
+.expense-history__details {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.expense-history__category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.expense-history__category-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  font-size: 15px;
+  background: var(--green-soft);
+  border-radius: 9px;
+}
+
+.expense-history__meta {
+  color: var(--ink-faint);
+  font-size: 11px;
+}
+
+.expense-history__amount {
+  gap: 8px;
+}
+
+.expense-history__amount strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
 
 .list__amount {
   display: inline-flex;
@@ -24,4 +152,35 @@
 .list__edit:hover {
   color: var(--green-deep);
   background: var(--green-soft);
+}
+
+.list__edit {
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+
+.list__edit:active {
+  transform: translateY(1px) scale(0.92);
+}
+
+@keyframes expense-history-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .expense-history__row {
+    min-height: 62px;
+    padding: 9px 10px;
+  }
+
+  .expense-history__amount strong {
+    font-size: 13px;
+  }
 }

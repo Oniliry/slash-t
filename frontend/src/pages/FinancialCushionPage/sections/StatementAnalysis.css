@@ -38,10 +38,21 @@
   padding: 10px 20px;
   border: none;
   border-radius: 12px;
-  background: var(--green);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
+  transition: box-shadow 160ms ease, transform 120ms ease;
+}
+
+.statement-analysis__file-button:hover {
+  box-shadow: 0 10px 22px -8px rgba(11, 92, 34, 0.72);
+  transform: translateY(-1px);
+}
+
+.statement-analysis__file-button:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 .statement-analysis__file-button input {
@@ -143,10 +154,22 @@
   padding: 10px 18px;
   border: none;
   border-radius: 12px;
-  background: var(--green);
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 8px 18px -8px rgba(11, 92, 34, 0.6);
+  transition: box-shadow 160ms ease, transform 120ms ease, opacity 160ms ease;
+}
+
+.statement-analysis__submit:hover:not(:disabled) {
+  box-shadow: 0 10px 22px -8px rgba(11, 92, 34, 0.72);
+  transform: translateY(-1px);
+}
+
+.statement-analysis__submit:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 2px 5px -3px rgba(11, 92, 34, 0.5);
 }
 
 .statement-analysis__submit:disabled {

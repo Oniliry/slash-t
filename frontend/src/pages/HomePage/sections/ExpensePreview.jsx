@@ -48,10 +48,12 @@ function ExpensePreview() {
   }, [loadExpenses]);
 
   return (
-    <article className="card">
-      <div className="section-heading">
+    <article className="card expense-preview">
+      <div className="section-heading expense-preview__heading">
         <h2>Последние расходы</h2>
-        <span className="section-heading__hint">{capitalize(monthFormatter.format(new Date()))}</span>
+        <span className="expense-preview__period">
+          {capitalize(monthFormatter.format(new Date()))}
+        </span>
       </div>
 
       {isLoading && <p className="list__empty">Загружаем расходы...</p>}
@@ -65,22 +67,29 @@ function ExpensePreview() {
       )}
 
       {!isLoading && !error && expenses.length > 0 && (
-        <div className="list">
+        <div className="list expense-preview__list">
           {expenses.map((expense) => {
             const category = getExpenseCategory(expense.category);
             return (
-              <div className="list__row" key={expense.id}>
-                <span>
-                  <b>
-                    <span aria-hidden="true">{category.icon}</span> {category.label}
+              <div
+                className="list__row expense-preview__row"
+                data-category={expense.category}
+                key={expense.id}
+              >
+                <span className="expense-preview__details">
+                  <b className="expense-preview__category">
+                    <span className="expense-preview__category-icon" aria-hidden="true">
+                      {category.icon}
+                    </span>
+                    {category.label}
                   </b>
-                  <small>
+                  <small className="expense-preview__meta">
                     {formatExpenseDate(expense.created_at)}
                     {expense.payer_name ? ` · ${expense.payer_name}` : ""} ·{" "}
                     {formatExpenseOwner(expense)}
                   </small>
                 </span>
-                <span className="list__amount">
+                <span className="list__amount expense-preview__amount">
                   <strong>{formatExpenseAmount(expense.amount)}</strong>
                   {expense.can_edit && (
                     <button
