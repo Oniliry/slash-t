@@ -48,11 +48,7 @@ function AddPurchaseButton({ variant = 'navbar' }) {
         )}
 
         {mobileMode === 'result' && (
-          <ScanResultOverlay
-            text={scannedText}
-            onClose={resetMobileFlow}
-            onCreated={handleCreated}
-          />
+          <ScanResultOverlay text={scannedText} onClose={resetMobileFlow} />
         )}
 
         {mobileMode === 'manual' && (

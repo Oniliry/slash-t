@@ -54,34 +54,12 @@ export interface CreateExpenseRequest {
   category: ExpenseCategory;
 }
 
-export interface ReceiptItem {
-  name: string;
-  quantity: number;
-  price: number;
-  amount: number;
-}
-
-export interface Receipt {
-  hash: string;
-  date: string;
-  total: number;
-  store: string;
-  items: ReceiptItem[];
-}
-
 export function createExpense(
   data: CreateExpenseRequest,
 ): Promise<APIResponse<Expense>> {
   return request<Expense>('/expenses', {
     method: 'POST',
     body: JSON.stringify(data),
-  })
-}
-
-export function scanReceipt(qr: string): Promise<APIResponse<Receipt>> {
-  return request<Receipt>('/expenses/receipt/scan', {
-    method: 'POST',
-    body: JSON.stringify({ qr }),
   })
 }
 

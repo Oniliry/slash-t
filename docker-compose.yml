@@ -19,7 +19,6 @@ services:
     environment:
       DATABASE_URL: postgresql://slash_t:slash_t@db:5432/slash_t
       ENVIRONMENT: production
-      CODE_QR_API_KEY: ${CODE_QR_API_KEY}
     ports:
       - "8000:8000"
     volumes:
