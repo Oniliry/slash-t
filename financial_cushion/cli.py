@@ -9,7 +9,7 @@
 
     # решения по переводам из JSON-флага
     python -m financial_cushion.cli --pdf "выписка.pdf" \
-        --decisions decisions.json --strategy median
+        --decisions decisions.json --strategy mean
 
     # сгенерировать шаблон decisions.json по найденным кандидатам
     python -m financial_cushion.cli --pdf "выписка.pdf" --emit-template
