@@ -19,5 +19,3 @@ jobs:
           script: |
             cd /root/slash-t
             git pull origin main
-            docker compose down
-            docker compose up -d --build

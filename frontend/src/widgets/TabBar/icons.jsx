@@ -55,3 +55,23 @@ export function ProfileIcon() {
     </svg>
   )
 }
+
+export function LogoutIcon() {
+  return (
+    <svg {...commonProps}>
+      <path d="M14 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H14" />
+      <path d="M11 12h8" />
+      <path d="m16 8 4 4-4 4" />
+    </svg>
+  )
+}
+
+export function EditIcon() {
+  return (
+    <svg {...commonProps}>
+      <path d="m14.5 5.5 4 4" />
+      <path d="m5 19 1.2-4.3L15.8 5a1.7 1.7 0 0 1 2.4 0l.8.8a1.7 1.7 0 0 1 0 2.4l-9.7 9.6Z" />
+      <path d="M5 19h4" />
+    </svg>
+  )
+}

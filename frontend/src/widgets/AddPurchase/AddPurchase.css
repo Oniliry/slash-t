@@ -13,7 +13,7 @@
   border-radius: var(--radius-pill);
   cursor: pointer;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 14px -6px rgba(11, 92, 34, 0.6);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
 .navbar__add:hover {
@@ -21,7 +21,8 @@
 }
 
 .navbar__add:active {
-  transform: scale(0.93);
+  transform: translateY(2px) scale(0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 5px -3px rgba(11, 92, 34, 0.7);
 }
 
 @media (max-width: 700px) {

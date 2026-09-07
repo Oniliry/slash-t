@@ -78,6 +78,15 @@ async def get_my_family(
     return await service.get_my_family(user)
 
 
+@router.post("/leave")
+async def leave_family(
+    user: CurrentUserDep,
+    service: FamilyServiceDep,
+):
+    """Позволяет текущему участнику покинуть семью."""
+    return await service.leave_family(user)
+
+
 @router.patch("/name")
 async def rename_family(
     data: RenameFamilyRequest,
