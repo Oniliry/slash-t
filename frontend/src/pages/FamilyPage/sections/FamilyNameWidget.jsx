@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { renameFamily } from '../../../shared/api/family.ts'
+import { EditIcon, LogoutIcon } from '../../../shared/ui/icons.jsx'
 
 import './FamilyWidgets.css'
 
-function FamilyNameWidget({ family, isAdmin, onChanged }) {
+function FamilyNameWidget({ family, isAdmin, onChanged, onLeave, isLeaving }) {
   const [isEditing, setIsEditing] = useState(false)
   const [name, setName] = useState(family.name)
   const [isSaving, setIsSaving] = useState(false)
@@ -48,16 +49,30 @@ function FamilyNameWidget({ family, isAdmin, onChanged }) {
         <h1>{family.name}</h1>
       )}
 
-      {isAdmin && !isEditing && (
-        <button
-          type="button"
-          className="family-name__edit"
-          onClick={handleStartEdit}
-          aria-label="Изменить название семьи"
-          title="Изменить название семьи"
-        >
-          ✎
-        </button>
+      {!isEditing && (
+        <div className="family-name__actions">
+          {isAdmin && (
+            <button
+              type="button"
+              className="family-name__action family-name__edit"
+              onClick={handleStartEdit}
+              aria-label="Изменить название семьи"
+              title="Изменить название семьи"
+            >
+              <EditIcon />
+            </button>
+          )}
+          <button
+            type="button"
+            className="family-name__action family-name__leave"
+            onClick={onLeave}
+            disabled={isLeaving}
+            aria-label="Покинуть семью"
+            title="Покинуть семью"
+          >
+            <LogoutIcon />
+          </button>
+        </div>
       )}
     </article>
   )

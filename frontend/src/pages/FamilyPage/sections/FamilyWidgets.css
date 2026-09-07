@@ -16,7 +16,8 @@
 .family-name {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .family-name h1 {
@@ -28,6 +29,7 @@
 
 .family-name input {
   flex: 1;
+  min-width: 0;
   padding: 8px 10px;
   font: inherit;
   font-size: 24px;
@@ -38,22 +40,52 @@
 }
 
 .family-name__edit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
   color: var(--ink-soft);
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
 }
 
-.family-name__edit:hover {
-  color: var(--ink);
-  background: rgba(16, 36, 26, 0.06);
+.family-name__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.family-name__action {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--glass-line);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+
+.family-name__action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.family-name__edit:hover:not(:disabled) {
+  color: var(--green-deep);
+  background: var(--green-soft);
+}
+
+.family-name__leave:hover:not(:disabled) {
+  color: var(--coral);
+  background: var(--coral-soft);
+}
+
+.family-name__action:active:not(:disabled) {
+  transform: translateY(2px) scale(0.92);
+}
+
+.family-name__action:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 /* --- Общий бюджет --- */

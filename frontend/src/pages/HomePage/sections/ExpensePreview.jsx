@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import AddPurchaseModal from "../../../widgets/AddPurchase/AddPurchaseModal.jsx";
 
 import { getExpenses } from "../../../shared/api/expenses.ts";
 import { getExpenseCategory } from "../../../shared/lib/expenseCategories.js";
@@ -21,6 +22,7 @@ function ExpensePreview() {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [editingExpense, setEditingExpense] = useState(null);
 
   const loadExpenses = useCallback(async () => {
     const response = await getExpenses();
@@ -46,10 +48,12 @@ function ExpensePreview() {
   }, [loadExpenses]);
 
   return (
-    <article className="card">
-      <div className="section-heading">
+    <article className="card expense-preview">
+      <div className="section-heading expense-preview__heading">
         <h2>Последние расходы</h2>
-        <span className="section-heading__hint">{capitalize(monthFormatter.format(new Date()))}</span>
+        <span className="expense-preview__period">
+          {capitalize(monthFormatter.format(new Date()))}
+        </span>
       </div>
 
       {isLoading && <p className="list__empty">Загружаем расходы...</p>}
@@ -63,26 +67,56 @@ function ExpensePreview() {
       )}
 
       {!isLoading && !error && expenses.length > 0 && (
-        <div className="list">
+        <div className="list expense-preview__list">
           {expenses.map((expense) => {
             const category = getExpenseCategory(expense.category);
             return (
-              <div className="list__row" key={expense.id}>
-                <span>
-                  <b>
-                    <span aria-hidden="true">{category.icon}</span> {category.label}
+              <div
+                className="list__row expense-preview__row"
+                data-category={expense.category}
+                key={expense.id}
+              >
+                <span className="expense-preview__details">
+                  <b className="expense-preview__category">
+                    <span className="expense-preview__category-icon" aria-hidden="true">
+                      {category.icon}
+                    </span>
+                    {category.label}
                   </b>
-                  <small>
+                  <small className="expense-preview__meta">
                     {formatExpenseDate(expense.created_at)}
                     {expense.payer_name ? ` · ${expense.payer_name}` : ""} ·{" "}
                     {formatExpenseOwner(expense)}
                   </small>
                 </span>
-                <strong>{formatExpenseAmount(expense.amount)}</strong>
+                <span className="list__amount expense-preview__amount">
+                  <strong>{formatExpenseAmount(expense.amount)}</strong>
+                  {expense.can_edit && (
+                    <button
+                      className="list__edit"
+                      type="button"
+                      onClick={() => setEditingExpense(expense)}
+                      aria-label={`Изменить покупку на ${formatExpenseAmount(expense.amount)}`}
+                      title="Изменить покупку"
+                    >
+                      ✎
+                    </button>
+                  )}
+                </span>
               </div>
             );
           })}
         </div>
+      )}
+      {editingExpense && (
+        <AddPurchaseModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onCreated={() => {
+            setEditingExpense(null);
+            loadExpenses();
+          }}
+        />
       )}
     </article>
   );

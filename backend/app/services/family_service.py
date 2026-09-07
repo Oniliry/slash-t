@@ -62,7 +62,7 @@ class FamilyService:
     ) -> List[FamilyMemberResponse]:
         """
         Считает долю каждого взрослого в общем доходе семьи, помечает админа
-        и возвращает список участников, отсортированный по убыванию дохода.
+        и возвращает список участников в стабильном порядке по идентификатору.
 
         :param members: Список пользователей семьи.
         :param created_by: Идентификатор создателя (админа) семьи.
@@ -90,7 +90,9 @@ class FamilyService:
                 )
             )
 
-        responses.sort(key=lambda item: item.monthly_income or Decimal("0"), reverse=True)
+        # Порядок не должен зависеть от дохода: иначе изменение слайдера
+        # меняет позиции участников и связанные с ними цвета.
+        responses.sort(key=lambda item: item.id)
 
         return responses
 
@@ -386,6 +388,43 @@ class FamilyService:
         await self.user_repo.clear_user_family(member_id)
 
         return await self.get_my_family(user)
+
+    async def leave_family(self, user: User) -> APIResponse[None]:
+        """
+        Позволяет участнику покинуть текущую семью.
+
+        Если пользователь является создателем, права владельца автоматически
+        передаются самому старому оставшемуся участнику.
+
+        :param user: Текущий авторизованный пользователь.
+        :return: Подтверждение выхода или сообщение об ошибке.
+        """
+        family, error = await self._get_user_family_or_error(user)
+        if error is not None:
+            return error
+
+        members = await self.user_repo.get_family_members(family.id)
+        if len(members) == 1:
+            deleted = await self.family_repo.delete_family(family.id, user.id)
+            if not deleted:
+                return APIResponse.fail(
+                    message="Не удалось завершить выход из семьи. Повторите попытку.",
+                    status_code=409,
+                    type="family_leave_conflict",
+                )
+
+            await self.user_repo.clear_user_family(user.id)
+            return APIResponse.success(message="Семья удалена, вы вышли из неё.")
+
+        left_user = await self.user_repo.leave_family(user.id, family.id)
+        if left_user is None:
+            return APIResponse.fail(
+                message="Нельзя покинуть семью без другого участника, который примет права владельца.",
+                status_code=409,
+                type="last_family_member_cannot_leave",
+            )
+
+        return APIResponse.success(message="Вы покинули семью.")
 
     async def update_budget_split(
         self,

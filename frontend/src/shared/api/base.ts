@@ -1,6 +1,7 @@
 import type { APIResponse } from './types'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+// Экспортируется для отдельных запросов вне request() — например,
+// multipart-загрузки файлов с FormData (Content-Type выставляет браузер).
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 // Токен сессии хранится в sessionStorage, а не в cookie. sessionStorage
 // изолирован для каждой вкладки браузера (в отличие от cookie, общей на весь
@@ -35,18 +36,15 @@ export async function request<T>(
   options: RequestInit = {},
 ): Promise<APIResponse<T>> {
   try {
-    const token = getStoredToken()
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> | undefined),
-    }
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
     }
 
     const response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers,
+      credentials: 'include',
     })
 
     const rawPayload = await response.json()

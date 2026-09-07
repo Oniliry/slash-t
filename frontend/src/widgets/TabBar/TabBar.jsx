@@ -1,7 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
 import AddPurchaseButton from '../AddPurchase/AddPurchaseButton.jsx'
-import { FamilyIcon, HomeIcon, ProfileIcon, ReceiptIcon } from './icons.jsx'
+import { FamilyIcon, HomeIcon, ProfileIcon, ReceiptIcon } from '../../shared/ui/icons.jsx'
+
+import './TabBar.css'
 
 const leftItems = [
   { to: '/', label: 'Главная', end: true, Icon: HomeIcon },

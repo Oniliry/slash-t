@@ -319,6 +319,53 @@ class UserRepository:
 
         return User.model_validate(dict(user_row))
 
+    async def leave_family(self, user_id: int, family_id: int) -> Optional[User]:
+        """
+        Убирает пользователя из семьи и при необходимости передаёт права владельца.
+
+        Если пользователь создал семью, владельцем становится самый старый
+        оставшийся участник. Операции выполняются одним SQL-запросом.
+
+        :param user_id: Идентификатор покидающего пользователя.
+        :param family_id: Идентификатор текущей семьи.
+        :return: Обновлённый пользователь или None, если выход невозможен.
+        """
+        user_row: Optional[Record] = await self.db.fetchrow(
+            """
+            WITH successor AS (
+                SELECT id
+                FROM users
+                WHERE family_id = $1 AND id <> $2
+                ORDER BY created_at ASC, id ASC
+                LIMIT 1
+            ), ownership_transfer AS (
+                UPDATE families AS family
+                SET created_by = successor.id
+                FROM successor
+                WHERE family.id = $1 AND family.created_by = $2
+                RETURNING family.id
+            )
+            UPDATE users
+            SET family_id = NULL, role = NULL, monthly_income = NULL
+            WHERE id = $2
+              AND family_id = $1
+              AND (
+                  NOT EXISTS (
+                      SELECT 1 FROM families
+                      WHERE id = $1 AND created_by = $2
+                  )
+                  OR EXISTS (SELECT 1 FROM ownership_transfer)
+              )
+            RETURNING id, name, login, created_at, family_id, role, monthly_income
+            """,
+            (family_id, user_id),
+        )
+
+        if user_row is None:
+            return None
+
+        return User.model_validate(dict(user_row))
+
 
 __all__ = [
     "UserRepository",

@@ -15,6 +15,7 @@ from schemas.expense import (
     DebtResponse,
     ExpenseResponse,
     MyDebtsResponse,
+    UpdateExpenseRequest,
 )
 
 _CENTS = Decimal("0.01")
@@ -261,6 +262,7 @@ class ExpenseService:
                 owner_id=expense.owner_id,
                 payer_id=expense.payer_id,
                 payer_name=names.get(expense.payer_id),
+                can_edit=True,
                 category=expense.category,
                 created_at=expense.created_at,
                 debts=[self._debt_response(debt, names) for debt in debts],
@@ -284,6 +286,8 @@ class ExpenseService:
             )
 
         members = await self.user_repo.get_family_members(user.family_id)
+        family = await self.family_repo.get_family(user.family_id)
+        is_admin = family is not None and family.created_by == user.id
         names = {member.id: member.name for member in members}
 
         expenses = await self.expense_repo.list_family_expenses(user.family_id, limit=limit)
@@ -297,6 +301,7 @@ class ExpenseService:
                     owner_id=expense.owner_id,
                     payer_id=expense.payer_id,
                     payer_name=names.get(expense.payer_id),
+                    can_edit=is_admin or expense.payer_id == user.id,
                     category=expense.category,
                     created_at=expense.created_at,
                     debts=[],
@@ -304,6 +309,124 @@ class ExpenseService:
                 for expense in expenses
             ],
             message="История покупок получена.",
+        )
+
+    async def update_expense(
+        self,
+        user: User,
+        expense_id: int,
+        data: UpdateExpenseRequest,
+    ) -> APIResponse[ExpenseResponse]:
+        """Изменяет покупку и пересоздаёт только связанные непогашенные долги."""
+        if user.family_id is None:
+            return APIResponse.fail(
+                message="Сначала создайте семью или присоединитесь к ней по коду.",
+                status_code=409,
+                type="family_required",
+            )
+
+        expense = await self.expense_repo.get_family_expense(expense_id, user.family_id)
+        if expense is None:
+            return APIResponse.fail("Покупка не найдена.", status_code=404, type="expense_not_found")
+
+        family = await self.family_repo.get_family(user.family_id)
+        is_admin = family is not None and family.created_by == user.id
+        if expense.payer_id != user.id and not is_admin:
+            return APIResponse.fail(
+                "Изменять покупку может только тот, кто её добавил, или админ семьи.",
+                status_code=403,
+                type="expense_forbidden",
+            )
+
+        debts = await self.debt_repo.list_expense_debts(expense_id)
+        if any(debt.status in {"confirmed", "netted"} for debt in debts):
+            return APIResponse.fail(
+                "Нельзя изменить покупку с подтверждённым или взаимозачтённым долгом.",
+                status_code=409,
+                type="expense_locked",
+            )
+
+        members = await self.user_repo.get_family_members(user.family_id)
+        members_by_id = {member.id: member for member in members}
+        names = {member.id: member.name for member in members}
+        owner_type = data.owner_type
+        owner_id = data.owner_id
+
+        if owner_type == "member":
+            owner = members_by_id.get(owner_id)
+            if owner is None:
+                return APIResponse.fail(
+                    "Участник не найден в этой семье.",
+                    status_code=404,
+                    type="member_not_found",
+                )
+            if owner.id == user.id:
+                owner_type, owner_id = "self", None
+            elif owner.role == "child":
+                return APIResponse.fail(
+                    "Ребёнку нельзя выставить долг — выберите «Общая», "
+                    "чтобы распределить трату между взрослыми.",
+                    status_code=400,
+                    type="cannot_charge_child",
+                )
+
+        updated = await self.expense_repo.update_expense(
+            expense_id,
+            user.family_id,
+            data.amount,
+            owner_type,
+            owner_id,
+            data.category,
+        )
+        if updated is None:
+            return APIResponse.fail("Покупка не найдена.", status_code=404, type="expense_not_found")
+
+        await self.debt_repo.delete_pending_for_expense(expense_id)
+        updated_debts: List[Debt] = []
+
+        if owner_type == "member":
+            updated_debts.append(
+                await self.debt_repo.add_debt(
+                    expense_id=expense_id,
+                    family_id=user.family_id,
+                    debtor_id=owner_id,
+                    creditor_id=expense.payer_id,
+                    amount=data.amount,
+                )
+            )
+        elif owner_type == "shared":
+            shares = self._income_shares(members)
+            for member in members:
+                if member.id == user.id:
+                    continue
+                share = shares.get(member.id)
+                if not share:
+                    continue
+                debt_amount = (data.amount * share).quantize(_CENTS, rounding=ROUND_HALF_UP)
+                if debt_amount > 0:
+                    updated_debts.append(
+                        await self.debt_repo.add_debt(
+                            expense_id=expense_id,
+                            family_id=user.family_id,
+                            debtor_id=member.id,
+                            creditor_id=expense.payer_id,
+                            amount=debt_amount,
+                        )
+                    )
+
+        return APIResponse.success(
+            data=ExpenseResponse(
+                id=updated.id,
+                amount=updated.amount,
+                owner_type=updated.owner_type,
+                owner_id=updated.owner_id,
+                payer_id=updated.payer_id,
+                payer_name=names.get(updated.payer_id),
+                category=updated.category,
+                created_at=updated.created_at,
+                debts=[self._debt_response(debt, names) for debt in updated_debts],
+            ),
+            message="Покупка изменена.",
         )
 
     async def get_my_debts(self, user: User) -> APIResponse[MyDebtsResponse]:

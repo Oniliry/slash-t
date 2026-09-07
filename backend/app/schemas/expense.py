@@ -37,6 +37,10 @@ class CreateExpenseRequest(BaseModel):
         return self
 
 
+class UpdateExpenseRequest(CreateExpenseRequest):
+    """Данные для изменения существующей покупки."""
+
+
 class DebtParticipantResponse(BaseModel):
     """
     Краткие данные участника долга (для отображения имени в списке).
@@ -95,6 +99,7 @@ class ExpenseResponse(BaseModel):
     owner_id: Optional[int] = None
     payer_id: int
     payer_name: Optional[str] = None
+    can_edit: bool = False
     category: ExpenseCategory = "other"
     created_at: datetime
     debts: List[DebtResponse] = []
@@ -117,6 +122,7 @@ class MyDebtsResponse(BaseModel):
 
 __all__ = [
     "CreateExpenseRequest",
+    "UpdateExpenseRequest",
     "DebtParticipantResponse",
     "DebtResponse",
     "ExpenseResponse",
