@@ -8,16 +8,12 @@ import "./AddPurchase.css";
 const HTML5_QRCODE_SRC = "https://jsdelivr.net";
 const READER_ELEMENT_ID = "receipt-qr-reader";
 
+// Упрощаем конфиг: убираем жесткие рамки разрешения ideal: 1920, 
+// из-за которых Safari на iOS часто молча зависает или падает.
 const SCAN_CONFIG = {
-  fps: 10,
+  fps: 15,
   qrbox: { width: 260, height: 260 },
-  aspectRatio: 1,
-  // Явно просимfacingMode на уровне медиа-потока библиотеки
-  videoConstraints: {
-    facingMode: "environment",
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
-  },
+  aspectRatio: 1
 };
 
 // Пытается понять, что именно пошло не так с камерой, и вернуть понятную
@@ -53,20 +49,19 @@ function describeCameraError(err) {
   return "Не удалось включить камеру. Проверьте разрешение на доступ к камере в браузере и нажмите «Повторить».";
 }
 
-// Выбирает индекс камеры в списке getCameras() для первого запуска.
+// Надежный выбор индекса задней камеры.
 function pickInitialCameraIndex(cameras) {
-  const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн/i.test(camera.label ?? ""));
+  // Ищем камеру, в названии которой есть признаки задней
+  const backIndex = cameras.findIndex((camera) => /back|rear|environment|задн|основн/i.test(camera.label ?? ""));
   if (backIndex !== -1) return backIndex;
 
-  const frontIndex = cameras.findIndex((camera) => /front|user|selfie|передн/i.test(camera.label ?? ""));
-  if (frontIndex !== -1 && cameras.length > 1) {
-    for (let i = cameras.length - 1; i >= 0; i -= 1) {
-      if (i !== frontIndex) return i;
-    }
+  // Если названий нет (браузер скрыл до старта), то на iOS/Android 
+  // в 99% случаев первая камера в списке (индекс 0) — это фронталка, 
+  // а ПОСЛЕДНЯЯ камера в списке — это основная задняя.
+  if (cameras.length > 1) {
+    return cameras.length - 1; 
   }
 
-  // Если браузер скрыл названия (метки пустые), по умолчанию на Android/iOS 
-  // под нулевым индексом практически всегда идет основная задняя камера.
   return 0;
 }
 
@@ -129,6 +124,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
         scannerRef.current = scanner;
 
+        // Сначала запрашиваем список камер
         const cameras = await Html5Qrcode.getCameras();
         if (!cameras || cameras.length === 0) {
           throw new Error("no-camera");
@@ -137,13 +133,13 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         if (!isMountedRef.current) return;
         setCameraCount(cameras.length);
 
+        // Определяем индекс задней камеры по нашему умному алгоритму
         const initialIndex = pickInitialCameraIndex(cameras);
         setCameraIndex(initialIndex);
 
-        // Включаем принудительноfacingMode: "environment" для старта,
-        // вместо слепого перебора по cameras[initialIndex].id
+        // Запускаем по конкретному ID устройства (это самый стабильный вариант для iOS Safari)
         await scanner.start(
-          { facingMode: "environment" },
+          cameras[initialIndex].id,
           SCAN_CONFIG,
           handleDecoded,
           handleScanFailure
@@ -156,6 +152,7 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
 
         setStatus("scanning");
       } catch (err) {
+        console.error("Camera init error:", err);
         if (!isMountedRef.current) return;
         setError(describeCameraError(err));
         setStatus("error");
@@ -181,11 +178,10 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
     try {
       await scanner.stop();
     } catch {
-      // Не критично — пробуем запустить следующую камеру.
+      // Не критично — всё равно пробуем запустить следующую камеру ниже.
     }
 
     try {
-      // При ручном переключении используем конкретный ID из системного пула
       await scanner.start(cameras[nextIndex].id, SCAN_CONFIG, handleDecoded, handleScanFailure);
       setCameraIndex(nextIndex);
       setStatus("scanning");
