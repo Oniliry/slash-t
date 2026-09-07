@@ -29,6 +29,16 @@ export interface Debt {
   creditor: DebtParticipant;
 }
 
+export interface ExpenseItem {
+  id: number;
+  name: string;
+  sum: number;
+  category: ExpenseCategory;
+  owner_type: ExpenseOwnerType;
+  owner_id: number | null;
+  owner_name?: string | null;
+}
+
 export interface Expense {
   id: number;
   amount: number;
@@ -37,8 +47,11 @@ export interface Expense {
   payer_id: number;
   payer_name?: string | null;
   category: ExpenseCategory;
+  shop_name?: string | null;
+  items_count: number;
   created_at: string;
   debts: Debt[];
+  items?: ExpenseItem[];
 }
 
 export interface MyDebts {
@@ -46,11 +59,21 @@ export interface MyDebts {
   owed_to_me: Debt[];
 }
 
+export interface CreateExpenseItemInput {
+  name: string;
+  sum: number;
+  category: ExpenseCategory;
+  owner_type?: ExpenseOwnerType;
+  owner_id?: number | null;
+}
+
 export interface CreateExpenseRequest {
-  amount: number;
-  owner_type: ExpenseOwnerType;
+  amount?: number;
+  owner_type?: ExpenseOwnerType;
   owner_id?: number | null;
   category: ExpenseCategory;
+  shop_name?: string | null;
+  items?: CreateExpenseItemInput[];
 }
 
 export function createExpense(
@@ -64,6 +87,12 @@ export function createExpense(
 
 export function getExpenses(limit = 50): Promise<APIResponse<Expense[]>> {
   return request<Expense[]>(`/expenses?limit=${limit}`, {
+    method: 'GET',
+  })
+}
+
+export function getExpense(expenseId: number): Promise<APIResponse<Expense>> {
+  return request<Expense>(`/expenses/${expenseId}`, {
     method: 'GET',
   })
 }

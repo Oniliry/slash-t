@@ -119,12 +119,56 @@ async def create_tables():
         """
     )
 
+    # Название покупки (например, магазин с чека) — опционально, для чеков.
+    await db.execute(
+        """
+        ALTER TABLE expenses
+            ADD COLUMN IF NOT EXISTS shop_name VARCHAR(150)
+        """
+    )
+
+    # Позиции покупки, если она добавлена через распознавание чека —
+    # одна покупка (expense) хранит несколько товаров.
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS expense_items (
+            id SERIAL PRIMARY KEY,
+            expense_id INTEGER NOT NULL REFERENCES expenses(id) ON DELETE CASCADE,
+            name VARCHAR(200) NOT NULL,
+            sum NUMERIC(12, 2) NOT NULL CHECK (sum > 0),
+            category VARCHAR(20) NOT NULL DEFAULT 'other',
+            position INTEGER NOT NULL DEFAULT 0
+        )
+        """
+    )
+
+    # Владелец конкретного товара внутри чека (личное/общее у каждой позиции
+    # может отличаться от других позиций того же чека).
+    await db.execute(
+        """
+        ALTER TABLE expense_items
+            ADD COLUMN IF NOT EXISTS owner_type VARCHAR(10) NOT NULL DEFAULT 'shared'
+            CHECK (owner_type IN ('self', 'member', 'shared'))
+        """
+    )
+    await db.execute(
+        """
+        ALTER TABLE expense_items
+            ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL
+        """
+    )
+
 async def drop_tables():
     """
     Удаляет таблицы пользователей, семей, покупок и долгов.
 
     Метод предназначен для служебных сценариев и очистки тестовой базы.
     """
+    await db.execute(
+        """
+        DROP TABLE IF EXISTS expense_items CASCADE
+        """
+    )
     await db.execute(
         """
         DROP TABLE IF EXISTS debts CASCADE

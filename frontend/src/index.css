@@ -197,6 +197,22 @@ a {
   background: var(--glass-fill-strong);
 }
 
+.list__row--button {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: var(--glass-fill-strong);
+  border: 0;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.list__row--button:hover,
+.list__row--button:focus-visible {
+  background: var(--glass-line);
+}
+
 .list__row span {
   display: grid;
   gap: 5px;

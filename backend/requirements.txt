@@ -1,6 +1,9 @@
 asyncpg
 fastapi
+httpx
+Pillow
 PyJWT
+pyzbar
 python-dotenv
 redis
 uvicorn[standard]

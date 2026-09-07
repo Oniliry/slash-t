@@ -23,6 +23,27 @@ ExpenseCategory = Literal[
 ]
 
 
+class ExpenseItem(BaseModel):
+    """Модель одной позиции покупки (товара из чека)."""
+
+    #: Уникальный идентификатор позиции.
+    id: int
+    #: Идентификатор покупки, которой принадлежит позиция.
+    expense_id: int
+    #: Название товара.
+    name: str
+    #: Стоимость позиции целиком.
+    sum: Decimal
+    #: Категория позиции.
+    category: ExpenseCategory = "other"
+    #: Кому принадлежит именно этот товар (личное/общее у каждой позиции своё).
+    owner_type: ExpenseOwnerType = "shared"
+    #: Идентификатор участника-владельца товара (только для owner_type="member").
+    owner_id: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Expense(BaseModel):
     """Модель покупки, добавленной участником семьи."""
 
@@ -40,6 +61,8 @@ class Expense(BaseModel):
     owner_id: Optional[int] = None
     #: Категория покупки.
     category: ExpenseCategory = "other"
+    #: Название покупки (например, магазин с чека), если указано.
+    shop_name: Optional[str] = None
     #: Дата и время добавления покупки.
     created_at: datetime
 
@@ -49,5 +72,6 @@ class Expense(BaseModel):
 __all__ = [
     "Expense",
     "ExpenseCategory",
+    "ExpenseItem",
     "ExpenseOwnerType",
 ]

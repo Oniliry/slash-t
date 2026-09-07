@@ -1,3 +1,6 @@
+import { useState } from "react";
+
+import ExpenseDetailModal from "../../../widgets/ExpenseDetail/ExpenseDetailModal.jsx";
 import { getExpenseCategory } from "../../../shared/lib/expenseCategories.js";
 import {
   formatExpenseAmount,
@@ -7,6 +10,8 @@ import {
 import "./ExpenseList.css";
 
 function ExpenseList({ expenses, isLoading, error }) {
+  const [openExpenseId, setOpenExpenseId] = useState(null);
+
   return (
     <article className="card">
       <div className="section-heading">
@@ -28,23 +33,34 @@ function ExpenseList({ expenses, isLoading, error }) {
         <div className="list">
           {expenses.map((expense) => {
             const category = getExpenseCategory(expense.category);
+            const title = expense.shop_name || category.label;
             return (
-              <div className="list__row" key={expense.id}>
+              <button
+                type="button"
+                className="list__row list__row--button"
+                key={expense.id}
+                onClick={() => setOpenExpenseId(expense.id)}
+              >
                 <span>
                   <b>
-                    <span aria-hidden="true">{category.icon}</span> {category.label}
+                    <span aria-hidden="true">{category.icon}</span> {title}
                   </b>
                   <small>
                     {formatExpenseDate(expense.created_at)}
                     {expense.payer_name ? ` · ${expense.payer_name}` : ""} ·{" "}
                     {formatExpenseOwner(expense)}
+                    {expense.items_count > 0 ? ` · ${expense.items_count} товаров` : ""}
                   </small>
                 </span>
                 <strong>{formatExpenseAmount(expense.amount)}</strong>
-              </div>
+              </button>
             );
           })}
         </div>
+      )}
+
+      {openExpenseId && (
+        <ExpenseDetailModal expenseId={openExpenseId} onClose={() => setOpenExpenseId(null)} />
       )}
     </article>
   );

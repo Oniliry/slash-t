@@ -43,6 +43,24 @@ async def list_expenses(
     return await service.list_expenses(user, limit=limit)
 
 
+@router.get("/{expense_id}")
+async def get_expense(
+    expense_id: int,
+    user: CurrentUserDep,
+    service: ExpenseServiceDep,
+):
+    """
+    Возвращает детальную информацию о покупке вместе со списком позиций —
+    для карточки покупки, открываемой по клику в истории.
+
+    :param expense_id: Идентификатор покупки.
+    :param user: Текущий авторизованный пользователь.
+    :param service: Сервис для работы с покупками и долгами.
+    :return: Данные покупки с позициями или ошибку.
+    """
+    return await service.get_expense_detail(user, expense_id)
+
+
 __all__ = [
     "router",
 ]

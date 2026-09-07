@@ -19,6 +19,8 @@ services:
     environment:
       DATABASE_URL: postgresql://slash_t:slash_t@db:5432/slash_t
       ENVIRONMENT: production
+      GIGACHAT_AUTH_KEY: MDFhMDdlMWUtODYwMS03ZjZlLThkNTgtMWU3ODI5NmY4ZjM0OjA2N2U1M2IzLWY2NjgtNGE4Yy05MWIyLWU3MDIyNTAwZjM0YQ==
+      GIGACHAT_SCOPE: GIGACHAT_API_PERS
     ports:
       - "8000:8000"
     volumes:

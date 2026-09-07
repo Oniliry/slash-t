@@ -13,6 +13,7 @@ from schemas.expense import (
     CreateExpenseRequest,
     DebtParticipantResponse,
     DebtResponse,
+    ExpenseItemResponse,
     ExpenseResponse,
     MyDebtsResponse,
 )
@@ -150,81 +151,50 @@ class ExpenseService:
             amount=-net_amount,
         )
 
-    async def create_expense(
-        self,
-        user: User,
-        data: CreateExpenseRequest,
-    ) -> APIResponse[ExpenseResponse]:
+    @staticmethod
+    def _resolve_owner(owner_type, owner_id, user, members_by_id):
         """
-        Добавляет покупку и, если она не личная, создаёт соответствующие долги.
+        Проверяет и нормализует владельца (покупки целиком или одного товара):
+        покупка "для себя" всегда превращается в self, ребёнку нельзя
+        выставить долг.
 
-        - self — личный расход, долгов не возникает;
-        - member — вся сумма ложится долгом на выбранного участника (кроме
-          самого плательщика — тогда покупка тоже считается личной);
-        - shared — сумма делится между остальными взрослыми пропорционально
-          их доле в общем бюджете семьи (столько же процентов от суммы,
-          сколько составляет их доля бюджета).
-
-        :param user: Текущий авторизованный пользователь (плательщик).
-        :param data: Сумма покупки и кому она принадлежит.
-        :return: Данные покупки вместе со списком созданных долгов или ошибку.
+        :return: Кортеж (owner_type, owner_id, ошибка или None).
         """
-        if user.family_id is None:
-            return APIResponse.fail(
-                message="Сначала создайте семью или присоединитесь к ней по коду.",
-                status_code=409,
-                type="family_required",
+        if owner_type != "member":
+            return owner_type, None, None
+
+        owner = members_by_id.get(owner_id)
+        if owner is None:
+            return None, None, ("Участник не найден в этой семье.", 404, "member_not_found")
+
+        if owner.id == user.id:
+            return "self", None, None
+
+        if owner.role == "child":
+            return None, None, (
+                "Ребёнку нельзя выставить долг — выберите «Общая», "
+                "чтобы распределить трату между взрослыми.",
+                400,
+                "cannot_charge_child",
             )
 
-        members = await self.user_repo.get_family_members(user.family_id)
-        members_by_id = {member.id: member for member in members}
-        names = {member.id: member.name for member in members}
+        return owner_type, owner_id, None
 
-        owner_type = data.owner_type
-        owner_id = data.owner_id
-
-        if owner_type == "member":
-            owner = members_by_id.get(owner_id)
-            if owner is None:
-                return APIResponse.fail(
-                    message="Участник не найден в этой семье.",
-                    status_code=404,
-                    type="member_not_found",
-                )
-
-            if owner.id == user.id:
-                # Покупка "для себя" — это личный расход, долгов не создаём.
-                owner_type = "self"
-                owner_id = None
-            elif owner.role == "child":
-                return APIResponse.fail(
-                    message="Ребёнку нельзя выставить долг — выберите «Общая», "
-                    "чтобы распределить трату между взрослыми.",
-                    status_code=400,
-                    type="cannot_charge_child",
-                )
-
-        amount = data.amount
-        expense = await self.expense_repo.add_expense(
-            family_id=user.family_id,
-            payer_id=user.id,
-            amount=amount,
-            owner_type=owner_type,
-            owner_id=owner_id,
-            category=data.category,
-        )
-
+    async def _create_debts_for_owner(
+        self, user: User, family_id: int, expense_id: int, owner_type: str, owner_id, amount, members,
+    ) -> List[Debt]:
+        """Создаёт долги для одной группы покупки/товаров с общим владельцем."""
         debts: List[Debt] = []
 
         if owner_type == "member":
             debt = await self.debt_repo.add_debt(
-                expense_id=expense.id,
-                family_id=user.family_id,
+                expense_id=expense_id,
+                family_id=family_id,
                 debtor_id=owner_id,
                 creditor_id=user.id,
                 amount=amount,
             )
-            net_debt = await self._net_debts_between(user.family_id, expense.id, owner_id, user.id, debt)
+            net_debt = await self._net_debts_between(family_id, expense_id, owner_id, user.id, debt)
             if net_debt is not None:
                 debts.append(net_debt)
         elif owner_type == "shared":
@@ -241,17 +211,130 @@ class ExpenseService:
                     continue
 
                 debt = await self.debt_repo.add_debt(
-                    expense_id=expense.id,
-                    family_id=user.family_id,
+                    expense_id=expense_id,
+                    family_id=family_id,
                     debtor_id=member.id,
                     creditor_id=user.id,
                     amount=debt_amount,
                 )
-                net_debt = await self._net_debts_between(
-                    user.family_id, expense.id, member.id, user.id, debt
-                )
+                net_debt = await self._net_debts_between(family_id, expense_id, member.id, user.id, debt)
                 if net_debt is not None:
                     debts.append(net_debt)
+
+        return debts
+
+    def _item_response(self, item, names: Dict[int, str]) -> ExpenseItemResponse:
+        """Собирает ответ по товару вместе с именем владельца (для отображения)."""
+        owner_name = names.get(item.owner_id) if item.owner_type == "member" else None
+        return ExpenseItemResponse(
+            id=item.id,
+            name=item.name,
+            sum=item.sum,
+            category=item.category,
+            owner_type=item.owner_type,
+            owner_id=item.owner_id,
+            owner_name=owner_name,
+        )
+
+    async def create_expense(
+        self,
+        user: User,
+        data: CreateExpenseRequest,
+    ) -> APIResponse[ExpenseResponse]:
+        """
+        Добавляет покупку и, если она не личная, создаёт соответствующие долги.
+
+        - self — личный расход, долгов не возникает;
+        - member — вся сумма ложится долгом на выбранного участника (кроме
+          самого плательщика — тогда покупка тоже считается личной);
+        - shared — сумма делится между остальными взрослыми пропорционально
+          их доле в общем бюджете семьи (столько же процентов от суммы,
+          сколько составляет их доля бюджета).
+
+        Если покупка добавлена через чек (передан items) — у каждого товара
+        может быть свой владелец (личное/общее), и покупка всё равно
+        сохраняется одной записью в истории; долги считаются отдельно по
+        каждой группе товаров с одинаковым владельцем.
+
+        :param user: Текущий авторизованный пользователь (плательщик).
+        :param data: Сумма покупки и кому она принадлежит.
+        :return: Данные покупки вместе со списком созданных долгов или ошибку.
+        """
+        if user.family_id is None:
+            return APIResponse.fail(
+                message="Сначала создайте семью или присоединитесь к ней по коду.",
+                status_code=409,
+                type="family_required",
+            )
+
+        members = await self.user_repo.get_family_members(user.family_id)
+        members_by_id = {member.id: member for member in members}
+        names = {member.id: member.name for member in members}
+
+        debts: List[Debt] = []
+
+        if data.items:
+            resolved_items = []
+            for item in data.items:
+                owner_type, owner_id, err = self._resolve_owner(
+                    item.owner_type, item.owner_id, user, members_by_id,
+                )
+                if err is not None:
+                    message, status_code, error_type = err
+                    return APIResponse.fail(message=message, status_code=status_code, type=error_type)
+                resolved_items.append({**item.model_dump(), "owner_type": owner_type, "owner_id": owner_id})
+
+            owner_keys = {(i["owner_type"], i["owner_id"]) for i in resolved_items}
+            expense_owner_type, expense_owner_id = (
+                next(iter(owner_keys)) if len(owner_keys) == 1 else ("shared", None)
+            )
+
+            expense = await self.expense_repo.add_expense(
+                family_id=user.family_id,
+                payer_id=user.id,
+                amount=data.amount,
+                owner_type=expense_owner_type,
+                owner_id=expense_owner_id,
+                category=data.category,
+                shop_name=data.shop_name,
+            )
+
+            created_items = await self.expense_repo.add_items(expense.id, resolved_items)
+            items = [self._item_response(item, names) for item in created_items]
+
+            groups: Dict[tuple, Decimal] = {}
+            for item in resolved_items:
+                key = (item["owner_type"], item["owner_id"])
+                groups[key] = groups.get(key, Decimal("0")) + item["sum"]
+
+            for (owner_type, owner_id), group_amount in groups.items():
+                debts.extend(
+                    await self._create_debts_for_owner(
+                        user, user.family_id, expense.id, owner_type, owner_id, group_amount, members,
+                    )
+                )
+        else:
+            owner_type, owner_id, err = self._resolve_owner(
+                data.owner_type, data.owner_id, user, members_by_id,
+            )
+            if err is not None:
+                message, status_code, error_type = err
+                return APIResponse.fail(message=message, status_code=status_code, type=error_type)
+
+            expense = await self.expense_repo.add_expense(
+                family_id=user.family_id,
+                payer_id=user.id,
+                amount=data.amount,
+                owner_type=owner_type,
+                owner_id=owner_id,
+                category=data.category,
+                shop_name=data.shop_name,
+            )
+            items = []
+
+            debts = await self._create_debts_for_owner(
+                user, user.family_id, expense.id, owner_type, owner_id, data.amount, members,
+            )
 
         return APIResponse.success(
             data=ExpenseResponse(
@@ -262,8 +345,11 @@ class ExpenseService:
                 payer_id=expense.payer_id,
                 payer_name=names.get(expense.payer_id),
                 category=expense.category,
+                shop_name=expense.shop_name,
+                items_count=len(items),
                 created_at=expense.created_at,
                 debts=[self._debt_response(debt, names) for debt in debts],
+                items=items,
             ),
             message="Покупка добавлена.",
         )
@@ -287,6 +373,7 @@ class ExpenseService:
         names = {member.id: member.name for member in members}
 
         expenses = await self.expense_repo.list_family_expenses(user.family_id, limit=limit)
+        items_counts = await self.expense_repo.count_items([expense.id for expense in expenses])
 
         return APIResponse.success(
             data=[
@@ -298,12 +385,53 @@ class ExpenseService:
                     payer_id=expense.payer_id,
                     payer_name=names.get(expense.payer_id),
                     category=expense.category,
+                    shop_name=expense.shop_name,
+                    items_count=items_counts.get(expense.id, 0),
                     created_at=expense.created_at,
                     debts=[],
                 )
                 for expense in expenses
             ],
             message="История покупок получена.",
+        )
+
+    async def get_expense_detail(self, user: User, expense_id: int) -> APIResponse[ExpenseResponse]:
+        """
+        Возвращает детальную информацию о покупке вместе со списком позиций
+        (для открытия карточки покупки по клику в истории).
+
+        :param user: Текущий авторизованный пользователь.
+        :param expense_id: Идентификатор покупки.
+        :return: Данные покупки с позициями или сообщение об ошибке.
+        """
+        expense = await self.expense_repo.get_expense(expense_id)
+        if expense is None or expense.family_id != user.family_id:
+            return APIResponse.fail(
+                message="Покупка не найдена.",
+                status_code=404,
+                type="expense_not_found",
+            )
+
+        members = await self.user_repo.get_family_members(user.family_id)
+        names = {member.id: member.name for member in members}
+        items = await self.expense_repo.get_items(expense_id)
+
+        return APIResponse.success(
+            data=ExpenseResponse(
+                id=expense.id,
+                amount=expense.amount,
+                owner_type=expense.owner_type,
+                owner_id=expense.owner_id,
+                payer_id=expense.payer_id,
+                payer_name=names.get(expense.payer_id),
+                category=expense.category,
+                shop_name=expense.shop_name,
+                items_count=len(items),
+                created_at=expense.created_at,
+                debts=[],
+                items=[self._item_response(item, names) for item in items],
+            ),
+            message="Покупка найдена.",
         )
 
     async def get_my_debts(self, user: User) -> APIResponse[MyDebtsResponse]:

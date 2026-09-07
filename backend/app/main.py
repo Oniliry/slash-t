@@ -16,6 +16,7 @@ from routers.family import router as family_router
 from routers.profile import router as profile_router
 from routers.expense import router as expense_router
 from routers.debt import router as debt_router
+from routers.receipt import router as receipt_router
 from routers.slash_t import router as slash_t_router
 
 @asynccontextmanager
@@ -53,6 +54,7 @@ app.include_router(family_router)
 app.include_router(profile_router)
 app.include_router(expense_router)
 app.include_router(debt_router)
+app.include_router(receipt_router)
 
 @app.get("/health")
 async def health():
