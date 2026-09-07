@@ -42,17 +42,28 @@ function describeCameraError(err) {
 }
 
 // Выбирает id камеры через Html5Qrcode.getCameras() (это же вызывает системный
-// запрос разрешения) и предпочитает заднюю камеру по подписи устройства —
-// это надёжнее, чем полагаться на facingMode, который на части Android-браузеров
-// подхватывается через раз.
+// запрос разрешения). Используется только как запасной путь, если основной
+// способ (facingMode: exact "environment", ниже) не сработал: активно избегаем
+// камеры с подписью "фронтальная", а не просто берём последнюю в списке.
 async function pickCameraId(Html5Qrcode) {
   const cameras = await Html5Qrcode.getCameras();
   if (!cameras || cameras.length === 0) {
     throw new Error("no-camera");
   }
+  if (cameras.length === 1) {
+    return cameras[0].id;
+  }
 
   const back = cameras.find((camera) => /back|rear|environment|задн/i.test(camera.label ?? ""));
-  return (back ?? cameras[cameras.length - 1]).id;
+  if (back) return back.id;
+
+  const isFront = (camera) => /front|user|selfie|передн/i.test(camera.label ?? "");
+  const nonFront = cameras.filter((camera) => !isFront(camera));
+  if (nonFront.length > 0) {
+    return nonFront[nonFront.length - 1].id;
+  }
+
+  return cameras[cameras.length - 1].id;
 }
 
 // Полноэкранный сканер QR-кода чека для мобильной версии. Парсинг содержимого
@@ -99,42 +110,47 @@ function ReceiptScannerModal({ onDecoded, onManualEntry }) {
         const scanner = new Html5Qrcode(READER_ELEMENT_ID, { verbose: false });
         scannerRef.current = scanner;
 
-        let cameraTarget;
+        const scanConfig = {
+          fps: 10,
+          qrbox: { width: 260, height: 260 },
+          aspectRatio: 1,
+          // Просим повыше разрешение — так мелкий QR-код на чеке проще
+          // поймать в фокус.
+          videoConstraints: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        };
+        const onSuccess = (decodedText) => {
+          if (isFinishingRef.current) return;
+          isFinishingRef.current = true;
+
+          stopScanner().finally(() => {
+            if (isCurrent) onDecoded(decodedText);
+          });
+        };
+        const onFailure = () => {
+          // Кадр без распознанного QR-кода — обычное дело во время наведения камеры.
+        };
+
         try {
-          // Основной путь: явный id камеры (просим заднюю по подписи устройства).
-          cameraTarget = await pickCameraId(Html5Qrcode);
+          // Основной путь: жёстко требуем заднюю камеру через facingMode.
+          // "exact" не даёт браузеру самому выбрать фронталку, если она
+          // почему-то стоит первой в списке устройств.
+          await scanner.start(
+            { facingMode: { exact: "environment" } },
+            scanConfig,
+            onSuccess,
+            onFailure,
+          );
         } catch {
-          // Запасной путь на случай, если getCameras недоступен в этом браузере —
-          // пробуем через facingMode напрямую.
-          cameraTarget = { facingMode: { ideal: "environment" } };
+          if (!isCurrent) return;
+          // Устройство не поддержало exact-ограничение — ищем заднюю камеру
+          // по списку устройств и подписи (id вместо facingMode).
+          const cameraId = await pickCameraId(Html5Qrcode);
+          if (!isCurrent) return;
+          await scanner.start(cameraId, scanConfig, onSuccess, onFailure);
         }
-        if (!isCurrent) return;
-
-        await scanner.start(
-          cameraTarget,
-          {
-            fps: 10,
-            qrbox: { width: 260, height: 260 },
-            aspectRatio: 1,
-            // Просим повыше разрешение — так мелкий QR-код на чеке проще
-            // поймать в фокус.
-            videoConstraints: {
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-            },
-          },
-          (decodedText) => {
-            if (isFinishingRef.current) return;
-            isFinishingRef.current = true;
-
-            stopScanner().finally(() => {
-              if (isCurrent) onDecoded(decodedText);
-            });
-          },
-          () => {
-            // Кадр без распознанного QR-кода — обычное дело во время наведения камеры.
-          },
-        );
 
         if (!isCurrent) {
           stopScanner();
