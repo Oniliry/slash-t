@@ -55,3 +55,14 @@ export function ProfileIcon() {
     </svg>
   )
 }
+
+export function CushionIcon() {
+  return (
+    <svg {...commonProps}>
+      <path d="M12 3.5 19 6v5.5c0 4.2-2.8 7.4-7 9-4.2-1.6-7-4.8-7-9V6l7-2.5Z" />
+      <circle cx="12" cy="11" r="2.5" />
+      <path d="M12 9.5v3" />
+      <path d="M10.5 11h3" />
+    </svg>
+  )
+}

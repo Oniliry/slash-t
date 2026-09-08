@@ -136,8 +136,32 @@
 }
 
 .sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 11px 14px;
   border-radius: var(--radius-pill);
+}
+
+.sidebar__link .tab-bar__icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  opacity: 0.72;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.sidebar__link:hover .tab-bar__icon,
+.sidebar__link--active .tab-bar__icon {
+  opacity: 1;
+}
+
+.sidebar__link:hover .tab-bar__icon {
+  transform: translateX(2px);
+}
+
+.sidebar__link:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 .sidebar__link:hover {
