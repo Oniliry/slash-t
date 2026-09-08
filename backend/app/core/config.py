@@ -38,6 +38,9 @@ GIGACHAT_SCOPE: str = getenv("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
 # Для распознавания фото нужна модель с поддержкой изображений (vision).
 GIGACHAT_MODEL: str = getenv("GIGACHAT_MODEL", "GigaChat-Max")
 
+OPENAI_API_KEY: str = getenv("OPENAI_API_KEY", "sk-1cIbcOZSV0L1R815hyzwdArwhN8EYLBI")
+OPENAI_BASE_URL: str = getenv("OPENAI_BASE_URL", "https://api.proxyapi.ru/v1")
+
 __all__ = [
     "DATABASE_URL", 
     "JWT_SECRET", 
@@ -50,4 +53,6 @@ __all__ = [
     "GIGACHAT_AUTH_KEY",
     "GIGACHAT_SCOPE",
     "GIGACHAT_MODEL",
+    "OPENAI_API_KEY",
+    "OPENAI_BASE_URL",
 ]

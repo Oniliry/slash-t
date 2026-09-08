@@ -17,6 +17,7 @@ from routers.profile import router as profile_router
 from routers.expense import router as expense_router
 from routers.debt import router as debt_router
 from routers.receipt import router as receipt_router
+from routers.notifications import router as notifications_router
 from routers.cushion import router as cushion_router
 from routers.financial_cushion import router as financial_cushion_router
 from routers.slash_t import router as slash_t_router
@@ -57,6 +58,7 @@ app.include_router(profile_router)
 app.include_router(expense_router)
 app.include_router(debt_router)
 app.include_router(receipt_router)
+app.include_router(notifications_router)
 app.include_router(cushion_router)
 app.include_router(financial_cushion_router)
 

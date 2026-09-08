@@ -54,6 +54,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+.notifications__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.notifications__button {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  place-items: center;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.notifications__button:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.notifications__button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
 @keyframes notification-message-in {
   from {
     opacity: 0;
