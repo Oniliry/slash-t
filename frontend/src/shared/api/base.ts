@@ -2,6 +2,10 @@ import type { APIResponse } from './types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
+// Экспортируется для отдельных запросов вне request() — например,
+// multipart-загрузки файлов с FormData (Content-Type выставляет браузер).
+export { API_URL }
+
 // Токен сессии хранится в sessionStorage, а не в cookie. sessionStorage
 // изолирован для каждой вкладки браузера (в отличие от cookie, общей на весь
 // домен) — благодаря этому вход в аккаунт в одной вкладке не переключает

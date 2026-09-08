@@ -158,12 +158,70 @@ async def create_tables():
         """
     )
 
+    # Финподушка: ручной баланс/цель и история операций (пополнение/списание).
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cushion_operations (
+            id SERIAL PRIMARY KEY,
+            family_id INTEGER NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            op_type VARCHAR(10) NOT NULL CHECK (op_type IN ('top-up', 'withdraw')),
+            amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+            comment VARCHAR(200) NOT NULL DEFAULT '',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+        """
+    )
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cushion_goals (
+            family_id INTEGER PRIMARY KEY REFERENCES families(id) ON DELETE CASCADE,
+            target_amount NUMERIC(14, 2) NOT NULL CHECK (target_amount >= 0),
+            months INTEGER NOT NULL DEFAULT 6,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+        """
+    )
+
+    # Последний анализ PDF-выписки каждого участника семьи:
+    # ключ — user_id (у каждого своя выписка), payload — полный JSON
+    # результата analyze_statement, cushion_total денормализован для рейтинга.
+    await db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS cushion_analysis (
+            user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+            family_id INTEGER NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+            months_analyzed INTEGER NOT NULL DEFAULT 0,
+            cushion_total NUMERIC(14, 2) NOT NULL DEFAULT 0,
+            full_months JSONB NOT NULL DEFAULT '[]',
+            excluded_months JSONB NOT NULL DEFAULT '[]',
+            payload JSONB NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+        """
+    )
+
 async def drop_tables():
     """
     Удаляет таблицы пользователей, семей, покупок и долгов.
 
     Метод предназначен для служебных сценариев и очистки тестовой базы.
     """
+    await db.execute(
+        """
+        DROP TABLE IF EXISTS cushion_analysis CASCADE
+        """
+    )
+    await db.execute(
+        """
+        DROP TABLE IF EXISTS cushion_goals CASCADE
+        """
+    )
+    await db.execute(
+        """
+        DROP TABLE IF EXISTS cushion_operations CASCADE
+        """
+    )
     await db.execute(
         """
         DROP TABLE IF EXISTS expense_items CASCADE

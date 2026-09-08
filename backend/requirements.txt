@@ -5,5 +5,8 @@ Pillow
 PyJWT
 pyzbar
 python-dotenv
+python-multipart
 redis
 uvicorn[standard]
+pandas>=2.0
+pdfplumber>=0.10
